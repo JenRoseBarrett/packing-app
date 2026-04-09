@@ -275,7 +275,7 @@
         <p class="subtitle" id="appSubtitle"></p>
       </div>
 
-      <div class="card">
+      <div class="card" id="tripCard">
         <h2 style="color: var(--pink)">Trip Details</h2>
         <label>Destination</label>
         <input type="text" id="destination" placeholder="e.g. Cabo, Paris, Miami Beach">
@@ -392,8 +392,7 @@
         if (!name) return;
         const role = selects[0].value;
         members.push({
-          name,
-          role,
+          name, role,
           age: role !== 'adult' && ageInput.value ? parseInt(ageInput.value) : null,
           gender: selects[1].value,
           packStyle: getPackStyle(row),
@@ -409,6 +408,9 @@
     function showMainApp() {
       document.getElementById('setupScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
+      document.getElementById('dashboard').classList.remove('visible');
+      document.getElementById('tripCard').style.display = 'block';
+      document.getElementById('listCard').style.display = 'none';
       document.getElementById('appTitle').textContent = `${family.familyName} Family Packing`;
       document.getElementById('appSubtitle').textContent = family.members.map(m =>
         m.age ? `${m.name} (${m.age})` : m.name
@@ -446,6 +448,7 @@
     function updateTrip() {
       document.getElementById('listCard').style.display = 'none';
       document.getElementById('dashboard').classList.remove('visible');
+      document.getElementById('tripCard').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -685,10 +688,11 @@
         container.appendChild(div);
       });
 
+      document.getElementById('tripCard').style.display = 'none';
       document.getElementById('listCard').style.display = 'block';
       document.getElementById('dashboard').classList.add('visible');
       updateProgress();
-      document.getElementById('listCard').scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function createItemRow(text, color) {
