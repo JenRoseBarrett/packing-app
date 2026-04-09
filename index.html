@@ -34,10 +34,14 @@
 
     .member-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
     .member-row { display: flex; flex-direction: column; gap: 8px; background: #fdf5fa; border-radius: 12px; padding: 12px; }
-    .member-row-top { display: flex; gap: 8px; align-items: center; }
-.member-row-top input[type="text"] { flex: 1; }
-.member-row-top select { width: 100px; }
-.member-row-top input[type="number"] { width: 60px; }
+    .member-row-top { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
+    .member-row-top input[type="text"] { flex: 2; min-width: 120px; padding: 9px 12px; border: 2px solid #f0e0ee; border-radius: 10px; font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600; outline: none; color: #333; margin-bottom: 0; }
+    .member-row-top input[type="text"]:focus { border-color: var(--pink); }
+    .member-row-top select { flex: 1; min-width: 80px; padding: 9px 8px; border: 2px solid #f0e0ee; border-radius: 10px; font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600; outline: none; color: #333; margin-bottom: 0; }
+    .member-row-top select:focus { border-color: var(--pink); }
+    .member-row-top input[type="number"] { flex: 0 0 60px; min-width: 60px; padding: 9px 8px; border: 2px solid #f0e0ee; border-radius: 10px; font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600; outline: none; color: #333; margin-bottom: 0; }
+    .member-row-top input[type="number"]:focus { border-color: var(--pink); }
+
     .member-row-bottom { display: flex; align-items: center; gap: 10px; }
     .member-row-bottom label { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 0; white-space: nowrap; }
     .pack-style-group { display: flex; gap: 6px; }
@@ -50,19 +54,17 @@
     .pack-style-btn.medium.active  { border-color: var(--pink);   background: var(--pink);   color: white; }
     .pack-style-btn.full.active    { border-color: var(--purple); background: var(--purple); color: white; }
 
-    .member-row input, .member-row select {
-      padding: 9px 12px; border: 2px solid #f0e0ee; border-radius: 10px;
-      font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600;
-      outline: none; color: #333; width: 100%; margin-bottom: 0;
-    }
-    .member-row input:focus, .member-row select:focus { border-color: var(--pink); }
     .btn-remove-member {
       background: #ffe0e0; color: var(--coral); border: none;
       border-radius: 8px; width: 36px; height: 36px; font-size: 16px;
       cursor: pointer; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .member-headers { display: grid; grid-template-columns: 1fr 100px 60px 100px 36px; gap: 8px; margin-bottom: 6px; }
-    .member-headers span { font-size: 12px; font-weight: 700; color: #aaa; padding-left: 4px; }
+    .member-headers { display: flex; gap: 8px; margin-bottom: 6px; padding: 0 12px; }
+    .member-headers span { font-size: 12px; font-weight: 700; color: #aaa; }
+    .member-headers .h-name { flex: 2; min-width: 120px; }
+    .member-headers .h-role { flex: 1; min-width: 80px; }
+    .member-headers .h-age  { flex: 0 0 60px; }
+    .member-headers .h-gender { flex: 1; min-width: 80px; }
 
     .btn-add-member {
       background: #f0faf9; color: var(--teal); border: 2px dashed var(--teal);
@@ -92,7 +94,7 @@
     .dashboard.visible { display: block; }
     .dash-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .dash-title { font-weight: 900; font-size: 15px; }
-    .dash-right { display: flex; align-items: center; gap: 10px; }
+    .dash-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .dash-pct { font-size: 26px; font-weight: 900; }
     .edit-mode-btn, .reset-btn, .update-trip-btn {
       border: 2px solid white; color: white; border-radius: 20px;
@@ -252,7 +254,10 @@
       </div>
       <h3>Who's in your family?</h3>
       <div class="member-headers">
-        <span>Name</span><span>Role</span><span>Age</span><span>Gender</span><span></span>
+        <span class="h-name">Name</span>
+        <span class="h-role">Role</span>
+        <span class="h-age">Age</span>
+        <span class="h-gender">Gender</span>
       </div>
       <div class="member-list" id="memberList"></div>
       <button class="btn-add-member" onclick="addMemberRow()">+ Add Family Member</button>
@@ -392,12 +397,12 @@
       const rows = document.querySelectorAll('#memberList .member-row');
       const members = [];
       rows.forEach(row => {
-        const inputs = row.querySelectorAll('input');
+        const nameInput = row.querySelector('input[type="text"]');
         const selects = row.querySelectorAll('select');
-        const name = inputs[0].value.trim();
+        const ageInput = row.querySelector('input[type="number"]');
+        const name = nameInput.value.trim();
         if (!name) return;
         const role = selects[0].value;
-        const ageInput = inputs[1];
         members.push({
           name,
           role,
@@ -469,18 +474,18 @@
     }
 
     function outfits(nights, style) {
-      if (style === 'light')  return Math.ceil(nights / 2);
-      if (style === 'full')   return nights + 2;
+      if (style === 'light') return Math.ceil(nights / 2);
+      if (style === 'full')  return nights + 2;
       return nights + 1;
     }
     function swimsuits(nights, style) {
-      if (style === 'light')  return Math.ceil(nights / 2);
-      if (style === 'full')   return nights + 1;
+      if (style === 'light') return Math.ceil(nights / 2);
+      if (style === 'full')  return nights + 1;
       return nights;
     }
     function pajamas(nights, style) {
-      if (style === 'light')  return 1;
-      if (style === 'full')   return nights;
+      if (style === 'light') return 1;
+      if (style === 'full')  return nights;
       return Math.ceil(nights / 2);
     }
     function shoes(style, isFemale) {
