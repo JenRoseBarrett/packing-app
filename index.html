@@ -59,12 +59,6 @@
       border-radius: 8px; width: 36px; height: 36px; font-size: 16px;
       cursor: pointer; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .member-headers { display: flex; gap: 8px; margin-bottom: 6px; padding: 0 12px; }
-    .member-headers span { font-size: 12px; font-weight: 700; color: #aaa; }
-    .member-headers .h-name { flex: 2; min-width: 120px; }
-    .member-headers .h-role { flex: 1; min-width: 80px; }
-    .member-headers .h-age  { flex: 0 0 60px; }
-    .member-headers .h-gender { flex: 1; min-width: 80px; }
 
     .btn-add-member {
       background: #f0faf9; color: var(--teal); border: 2px dashed var(--teal);
@@ -253,12 +247,6 @@
         <input type="text" id="familyName" placeholder="e.g. Barrett, Smith, Johnson...">
       </div>
       <h3>Who's in your family?</h3>
-      <div class="member-headers">
-        <span class="h-name">Name</span>
-        <span class="h-role">Role</span>
-        <span class="h-age">Age</span>
-        <span class="h-gender">Gender</span>
-      </div>
       <div class="member-list" id="memberList"></div>
       <button class="btn-add-member" onclick="addMemberRow()">+ Add Family Member</button>
       <button class="btn-start" onclick="saveFamily()">Let's Pack!</button>
