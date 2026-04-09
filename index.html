@@ -16,13 +16,11 @@
 
     /* SETUP SCREEN */
     .setup-screen {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 20px;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
     }
     .setup-card {
       background: white; border-radius: 24px; padding: 36px;
-      max-width: 560px; width: 100%;
-      box-shadow: 0 8px 32px rgba(233,30,140,0.12);
+      max-width: 640px; width: 100%; box-shadow: 0 8px 32px rgba(233,30,140,0.12);
     }
     .setup-card h1 {
       font-size: 28px; font-weight: 900; margin-bottom: 6px;
@@ -35,33 +33,39 @@
     .family-name-row { display: flex; gap: 10px; margin-bottom: 24px; }
     .family-name-row input { flex: 1; }
 
-    .member-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-    .member-row {
-      display: grid; grid-template-columns: 1fr 110px 70px 100px 36px;
-      gap: 8px; align-items: center;
+    .member-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+    .member-row { display: flex; flex-direction: column; gap: 8px; background: #fdf5fa; border-radius: 12px; padding: 12px; }
+    .member-row-top { display: grid; grid-template-columns: 1fr 100px 60px 100px 36px; gap: 8px; align-items: center; }
+    .member-row-bottom { display: flex; align-items: center; gap: 10px; }
+    .member-row-bottom label { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 0; white-space: nowrap; }
+    .pack-style-group { display: flex; gap: 6px; }
+    .pack-style-btn {
+      padding: 5px 12px; border: 2px solid #ddd; border-radius: 16px;
+      background: white; color: #999; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px; transition: all 0.2s;
     }
+    .pack-style-btn.light.active   { border-color: var(--teal);   background: var(--teal);   color: white; }
+    .pack-style-btn.medium.active  { border-color: var(--pink);   background: var(--pink);   color: white; }
+    .pack-style-btn.full.active    { border-color: var(--purple); background: var(--purple); color: white; }
+
     .member-row input, .member-row select {
       padding: 9px 12px; border: 2px solid #f0e0ee; border-radius: 10px;
       font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600;
       outline: none; color: #333; width: 100%; margin-bottom: 0;
     }
     .member-row input:focus, .member-row select:focus { border-color: var(--pink); }
-    .member-row .btn-remove-member {
+    .btn-remove-member {
       background: #ffe0e0; color: var(--coral); border: none;
       border-radius: 8px; width: 36px; height: 36px; font-size: 16px;
-      cursor: pointer; font-weight: 900; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .member-headers {
-      display: grid; grid-template-columns: 1fr 110px 70px 100px 36px;
-      gap: 8px; margin-bottom: 6px;
-    }
+    .member-headers { display: grid; grid-template-columns: 1fr 100px 60px 100px 36px; gap: 8px; margin-bottom: 6px; }
     .member-headers span { font-size: 12px; font-weight: 700; color: #aaa; padding-left: 4px; }
 
     .btn-add-member {
       background: #f0faf9; color: var(--teal); border: 2px dashed var(--teal);
       border-radius: 10px; padding: 9px 16px; font-family: 'Nunito', sans-serif;
-      font-weight: 800; font-size: 14px; cursor: pointer; width: 100%; margin-bottom: 24px;
-      transition: background 0.2s;
+      font-weight: 800; font-size: 14px; cursor: pointer; width: 100%; margin-bottom: 24px; transition: background 0.2s;
     }
     .btn-add-member:hover { background: #e0f7f5; }
 
@@ -90,14 +94,14 @@
     .dash-title { font-weight: 900; font-size: 15px; }
     .dash-right { display: flex; align-items: center; gap: 10px; }
     .dash-pct { font-size: 26px; font-weight: 900; }
-    .edit-mode-btn, .reset-btn {
+    .edit-mode-btn, .reset-btn, .update-trip-btn {
       border: 2px solid white; color: white; border-radius: 20px;
       padding: 4px 12px; font-family: 'Nunito', sans-serif;
       font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s;
       background: rgba(255,255,255,0.2);
     }
     .edit-mode-btn.active { background: white; color: var(--pink); }
-    .reset-btn:hover { background: rgba(255,255,255,0.35); }
+    .reset-btn:hover, .update-trip-btn:hover { background: rgba(255,255,255,0.35); }
     .dash-bar-wrap { background: rgba(255,255,255,0.3); border-radius: 8px; height: 10px; margin-bottom: 12px; }
     .dash-bar { background: white; height: 10px; border-radius: 8px; transition: width 0.4s ease; }
     .dash-people { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -161,7 +165,11 @@
     .generate-btn:hover { opacity: 0.88; }
 
     .category { margin-bottom: 24px; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .cat-header { padding: 10px 16px; font-size: 15px; font-weight: 900; color: white; }
+    .cat-header { padding: 10px 16px; font-size: 15px; font-weight: 900; color: white; display: flex; align-items: center; justify-content: space-between; }
+    .pack-badge {
+      font-size: 11px; font-weight: 800; padding: 2px 8px;
+      border-radius: 10px; background: rgba(255,255,255,0.25); color: white; letter-spacing: 0.3px;
+    }
     .cat-body { padding: 4px 0; }
 
     .item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); }
@@ -254,7 +262,6 @@
       </div>
       <div class="member-list" id="memberList"></div>
       <button class="btn-add-member" onclick="addMemberRow()">+ Add Family Member</button>
-
       <button class="btn-start" onclick="saveFamily()">Let's Pack!</button>
     </div>
   </div>
@@ -265,8 +272,8 @@
       <div class="dash-top">
         <div class="dash-title" id="dashTitle">Packing Progress</div>
         <div class="dash-right">
-          <button class="reset-btn" onclick="updateTrip()">Update Trip</button>
-<button class="reset-btn" onclick="resetFamily()">Change Family</button>
+          <button class="update-trip-btn" onclick="updateTrip()">Update Trip</button>
+          <button class="reset-btn" onclick="resetFamily()">Change Family</button>
           <button class="edit-mode-btn" id="editModeBtn" onclick="toggleEditMode()">Edit List</button>
           <div class="dash-pct" id="dashPct">0%</div>
         </div>
@@ -337,33 +344,53 @@
         family = JSON.parse(saved);
         showMainApp();
       } else {
-        addMemberRow();
-        addMemberRow();
+        addMemberRow(); addMemberRow();
         document.getElementById('setupScreen').style.display = 'flex';
       }
     }
 
-    function addMemberRow(name='', role='adult', age='', gender='') {
+    function addMemberRow(name='', role='adult', age='', gender='female', packStyle='medium') {
       const list = document.getElementById('memberList');
       const row = document.createElement('div');
       row.className = 'member-row';
       row.innerHTML = `
-        <input type="text" placeholder="Name" value="${name}">
-        <select>
-          <option value="adult" ${role==='adult'?'selected':''}>Adult</option>
-          <option value="kid" ${role==='kid'?'selected':''}>Kid</option>
-          <option value="toddler" ${role==='toddler'?'selected':''}>Toddler</option>
-          <option value="baby" ${role==='baby'?'selected':''}>Baby</option>
-        </select>
-        <input type="number" placeholder="Age" value="${age}" min="0" max="99">
-        <select>
-          <option value="female" ${gender==='female'?'selected':''}>Female</option>
-          <option value="male" ${gender==='male'?'selected':''}>Male</option>
-          <option value="neutral" ${gender==='neutral'?'selected':''}>Neutral</option>
-        </select>
-        <button class="btn-remove-member" onclick="this.closest('.member-row').remove()">×</button>
+        <div class="member-row-top">
+          <input type="text" placeholder="Name" value="${name}">
+          <select>
+            <option value="adult" ${role==='adult'?'selected':''}>Adult</option>
+            <option value="kid" ${role==='kid'?'selected':''}>Kid</option>
+            <option value="toddler" ${role==='toddler'?'selected':''}>Toddler</option>
+            <option value="baby" ${role==='baby'?'selected':''}>Baby</option>
+          </select>
+          <input type="number" placeholder="Age" value="${age}" min="0" max="99">
+          <select>
+            <option value="female" ${gender==='female'?'selected':''}>Female</option>
+            <option value="male" ${gender==='male'?'selected':''}>Male</option>
+            <option value="neutral" ${gender==='neutral'?'selected':''}>Neutral</option>
+          </select>
+          <button class="btn-remove-member" onclick="this.closest('.member-row').remove()">×</button>
+        </div>
+        <div class="member-row-bottom">
+          <label>Packing Style:</label>
+          <div class="pack-style-group">
+            <button class="pack-style-btn light ${packStyle==='light'?'active':''}" onclick="setPackStyle(this,'light')">Light</button>
+            <button class="pack-style-btn medium ${packStyle==='medium'?'active':''}" onclick="setPackStyle(this,'medium')">Medium</button>
+            <button class="pack-style-btn full ${packStyle==='full'?'active':''}" onclick="setPackStyle(this,'full')">Full</button>
+          </div>
+        </div>
       `;
       list.appendChild(row);
+    }
+
+    function setPackStyle(btn, style) {
+      const group = btn.closest('.pack-style-group');
+      group.querySelectorAll('.pack-style-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function getPackStyle(row) {
+      const active = row.querySelector('.pack-style-btn.active');
+      return active ? active.textContent.toLowerCase() : 'medium';
     }
 
     function saveFamily() {
@@ -380,6 +407,7 @@
           role: selects[0].value,
           age: inputs[1].value ? parseInt(inputs[1].value) : null,
           gender: selects[1].value,
+          packStyle: getPackStyle(row),
           color: memberColors[members.length % memberColors.length]
         });
       });
@@ -392,38 +420,28 @@
     function showMainApp() {
       document.getElementById('setupScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
-
-      // Set title & subtitle
       document.getElementById('appTitle').textContent = `${family.familyName} Family Packing`;
       document.getElementById('appSubtitle').textContent = family.members.map(m =>
         m.age ? `${m.name} (${m.age})` : m.name
       ).join(' · ');
       document.getElementById('dashTitle').textContent = `${family.familyName} Family — Packing Progress`;
 
-      // Build dashboard people
       const dashPeople = document.getElementById('dashPeople');
       dashPeople.innerHTML = '';
       family.members.forEach(m => {
+        const slug = m.name.toLowerCase().replace(/\s/g,'-');
         const div = document.createElement('div');
         div.className = 'dash-person';
-        div.id = `dash-${m.name.toLowerCase().replace(/\s/g,'-')}`;
-        div.style.background = `rgba(255,255,255,0.2)`;
         div.innerHTML = `
           <div class="name">${m.name}</div>
-          <div id="pct-${m.name.toLowerCase().replace(/\s/g,'-')}">0%</div>
-          <div class="mini-bar-wrap">
-            <div class="mini-bar" id="bar-${m.name.toLowerCase().replace(/\s/g,'-')}" style="width:0%"></div>
-          </div>
+          <div id="pct-${slug}">0%</div>
+          <div class="mini-bar-wrap"><div class="mini-bar" id="bar-${slug}" style="width:0%"></div></div>
         `;
         dashPeople.appendChild(div);
       });
     }
 
-    function updateTrip() {
-  document.getElementById('listCard').style.display = 'none';
-  document.getElementById('dashboard').classList.remove('visible');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}function resetFamily() {
+    function resetFamily() {
       if (!confirm('Reset family profile? This will clear your saved family info.')) return;
       localStorage.removeItem('familyPackingData');
       family = null;
@@ -436,7 +454,13 @@
       document.getElementById('setupScreen').style.display = 'flex';
     }
 
-    // ── LIST GENERATION ────────────────────────────────────
+    function updateTrip() {
+      document.getElementById('listCard').style.display = 'none';
+      document.getElementById('dashboard').classList.remove('visible');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── HELPERS ────────────────────────────────────────────
     function selectOne(btn, group) {
       document.querySelectorAll(`[onclick*="'${group}'"]`).forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -445,12 +469,42 @@
       const btn = document.querySelector(`[onclick*="'${group}'"].active`);
       return btn ? btn.dataset.val : null;
     }
-
     function ageLabel(m) {
-      if (m.age) return `${m.name} (age ${m.age})`;
-      return m.name;
+      return m.age ? `${m.name} (age ${m.age})` : m.name;
     }
 
+    // ── PACKING QUANTITIES by style ────────────────────────
+    function outfits(nights, style) {
+      if (style === 'light')  return Math.ceil(nights / 2);
+      if (style === 'full')   return nights + 2;
+      return nights + 1; // medium
+    }
+    function swimsuits(nights, style) {
+      if (style === 'light')  return Math.ceil(nights / 2);
+      if (style === 'full')   return nights + 1;
+      return nights;
+    }
+    function pajamas(nights, style) {
+      if (style === 'light')  return 1;
+      if (style === 'full')   return nights;
+      return Math.ceil(nights / 2);
+    }
+    function shoes(style, isFemale) {
+      if (style === 'light')  return isFemale
+        ? ['1 versatile sandal / sneaker', '1 dinner shoe']
+        : ['1 versatile shoe / sandal'];
+      if (style === 'full' && isFemale) return ['Comfortable walking shoes', 'Sandals / flip flops', 'Dinner shoes', 'Workout shoes', 'Extra pair (just in case)'];
+      if (isFemale) return ['Comfortable walking shoes', 'Sandals / flip flops', 'Dinner shoes', 'Workout shoes'];
+      if (style === 'full') return ['Casual shoes / sandals', 'Dinner shoes', 'Extra sneakers'];
+      return ['Casual shoes / sandals', 'Dinner shoes'];
+    }
+    function packStyleNote(style) {
+      if (style === 'light') return 'Pack light — mix & match recommended. Consider carry-on only!';
+      if (style === 'full')  return 'Full packing — everything you might need included.';
+      return null;
+    }
+
+    // ── LIST GENERATION ────────────────────────────────────
     function generateList() {
       const nights = parseInt(document.getElementById('nights').value) || 3;
       const tripType = getVal('triptype');
@@ -466,83 +520,107 @@
         const isAdult = m.role === 'adult';
         const isFemale = m.gender === 'female';
         const isMale = m.gender === 'male';
+        const style = m.packStyle || 'medium';
+        const note = packStyleNote(style);
 
-        const clothing = [
-          `Outfits: ${nights + 1}`,
-          ...(isAdult && isFemale ? [
-            `Swimsuits: ${nights} (one per day)`,
-            `Cover-ups: ${Math.ceil(nights/2)} (for lunches)`,
-            `Workout clothes: ${nights} sets`,
-            `Dinner outfits: ${nights}`,
-            `Pajamas: ${Math.ceil(nights/2)}`,
-            `Underwear & socks: ${nights + 2} pairs`,
-            'Comfortable walking shoes', 'Sandals / flip flops', 'Dinner shoes', 'Workout shoes',
-          ] : []),
-          ...(isAdult && isMale ? [
-            `Swimsuits: ${nights} (one per day)`,
-            `Cover-ups / shirts for lunch: ${Math.ceil(nights/2)}`,
-            `Dinner outfits: ${nights}`,
-            `Pajamas: ${Math.ceil(nights/2)}`,
-            `Underwear & socks: ${nights + 2} pairs`,
-            'Casual shoes / sandals', 'Dinner shoes',
-          ] : []),
-          ...(isAdult && m.gender === 'neutral' ? [
-            `Swimsuits: ${nights} (one per day)`,
-            `Dinner outfits: ${nights}`,
-            `Pajamas: ${Math.ceil(nights/2)}`,
-            `Underwear & socks: ${nights + 2} pairs`,
+        const clothing = [];
+        if (note) clothing.push(`Note: ${note}`);
+
+        if (isAdult && isFemale) {
+          clothing.push(
+            `Outfits: ${outfits(nights, style)}${style === 'light' ? ' (mix & match pieces)' : ''}`,
+            `Swimsuits: ${swimsuits(nights, style)}`,
+            ...(style !== 'light' ? [`Cover-ups: ${Math.ceil(nights/2)} (for lunches)`] : ['1 cover-up (doubles for lunch & beach)']),
+            ...(style === 'light' ? [] : [`Workout clothes: ${nights} sets`]),
+            `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) + ' (re-wear encouraged)' : nights}`,
+            `Pajamas: ${pajamas(nights, style)}`,
+            `Underwear & socks: ${outfits(nights, style) + 1} pairs`,
+            ...shoes(style, true),
+          );
+        } else if (isAdult && isMale) {
+          clothing.push(
+            `Outfits: ${outfits(nights, style)}${style === 'light' ? ' (mix & match)' : ''}`,
+            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Cover-ups / shirts for lunch: ${style === 'light' ? 1 : Math.ceil(nights/2)}`,
+            `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
+            `Pajamas: ${pajamas(nights, style)}`,
+            `Underwear & socks: ${outfits(nights, style) + 1} pairs`,
+            ...shoes(style, false),
+          );
+        } else if (isAdult) {
+          clothing.push(
+            `Outfits: ${outfits(nights, style)}`,
+            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
+            `Pajamas: ${pajamas(nights, style)}`,
+            `Underwear & socks: ${outfits(nights, style) + 1} pairs`,
             'Shoes (casual & dinner)',
-          ] : []),
-          ...(isKid ? [
-            `Swimsuits: ${nights} (one per day)`,
-            `Cover-up for lunch: ${Math.ceil(nights/2)}`,
-            `Play clothes: ${nights} sets`,
-            `Dinner outfits: ${nights}`,
-            `Pajamas: ${nights}`,
-            `Underwear & socks: ${nights + 2} pairs`,
+          );
+        } else if (isKid) {
+          clothing.push(
+            `Outfits: ${outfits(nights, style)}`,
+            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Cover-up for lunch: ${style === 'light' ? 1 : Math.ceil(nights/2)}`,
+            ...(style !== 'light' ? [`Play clothes: ${nights} sets`] : ['Play clothes: 2 sets (re-wear)']),
+            `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
+            `Pajamas: ${pajamas(nights, style)}`,
+            `Underwear & socks: ${outfits(nights, style) + 1} pairs`,
             'Water shoes / sandals', 'Sneakers for play',
             ...(isFemale ? ['Hair ties & accessories'] : []),
-          ] : []),
-          ...(isToddler ? [
-            `Swimsuits: ${nights}`,
-            `Play outfits: ${nights + 1}`,
-            `Pajamas: ${nights}`,
-            `Underwear & socks: ${nights + 2} pairs`,
+          );
+        } else if (isToddler) {
+          clothing.push(
+            `Outfits: ${outfits(nights, style) + 1} (extras for spills)`,
+            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Pajamas: ${pajamas(nights, style)}`,
+            `Underwear & socks: ${outfits(nights, style) + 2} pairs`,
             'Water shoes / sandals',
             ...(isFemale ? ['Hair clips / ties'] : []),
-          ] : []),
-          ...(isBaby ? [
-            `Onesies: ${(nights + 1) * 2}`,
-            `Sleep sacks / pajamas: ${nights + 1}`,
-            `Socks & hats: ${nights + 2} pairs`,
-          ] : []),
-          ...(tripType === 'cold' ? ['Heavy coat', 'Gloves', m.role === 'baby' ? 'Bunting / snowsuit' : 'Thermal underlayers'] : []),
-        ];
-        categories[`${ageLabel(m)}'s Clothing`] = clothing;
+          );
+        } else if (isBaby) {
+          clothing.push(
+            `Onesies: ${(outfits(nights, style) + 1) * 2} (extras for changes)`,
+            `Sleep sacks / pajamas: ${pajamas(nights, style) + 1}`,
+            `Socks & hats: ${outfits(nights, style) + 2} pairs`,
+          );
+        }
+
+        if (tripType === 'cold') {
+          clothing.push('Heavy coat', 'Gloves', isBaby ? 'Bunting / snowsuit' : 'Thermal underlayers');
+        }
+        if (style === 'light') clothing.push('Laundry bags — plan to wash mid-trip if needed');
+
+        categories[`${ageLabel(m)}'s Clothing`] = { items: clothing, packStyle: style };
       });
 
-      // Toiletries — personalized
+      // Toiletries
       const toiletries = ['Toothbrushes & toothpaste (all)', 'Shampoo & conditioner', 'Body wash / soap'];
       family.members.forEach(m => {
         if (m.role === 'adult' && m.gender === 'female') {
           toiletries.push(`Makeup & remover (${m.name})`, `Hair products (${m.name})`, `Feminine hygiene (${m.name})`);
+          if (m.packStyle === 'light') toiletries.push(`Makeup: essentials only for ${m.name}`);
         }
         if (m.role === 'adult') toiletries.push(`Deodorant (${m.name})`);
         if (m.role === 'kid' && m.gender === 'female') toiletries.push(`Kids detangler & brush (${m.name})`);
         if (m.role === 'toddler' || m.role === 'baby') toiletries.push(`Baby wash & lotion (${m.name})`, `Diapers & wipes (${m.name})`);
       });
-      toiletries.push('After-sun lotion / aloe', 'Moisturizer', 'Razor & shaving cream', 'Hairdryer (check if provided)', 'Nail file & clippers', 'Q-tips & cotton pads', 'Lip balm');
-      categories['Toiletries'] = toiletries;
+      const hasLight = family.members.some(m => m.packStyle === 'light');
+      toiletries.push(
+        'After-sun lotion / aloe', 'Moisturizer', 'Razor & shaving cream',
+        'Hairdryer (check if provided)', 'Nail file & clippers', 'Q-tips & cotton pads', 'Lip balm',
+        ...(hasLight ? ['Consider solid shampoo bars & travel-size toiletries to save space'] : []),
+      );
+      categories['Toiletries'] = { items: toiletries };
 
       // Documents
       const docs = [];
-      family.members.forEach(m => {
-        if (m.role === 'adult') docs.push(`ID / Passport — ${m.name}`);
-      });
+      family.members.forEach(m => { if (m.role === 'adult') docs.push(`ID / Passport — ${m.name}`); });
       docs.push('Credit cards & cash', 'Phone chargers (all devices)', 'Portable battery pack', 'Headphones', 'Sunglasses for everyone', 'Beach bag / tote', 'Reusable water bottles');
       if (accom === 'allinclusive') docs.push('Resort confirmation & booking details', 'Room wristbands / key info');
       if (accom === 'airbnb') docs.push('Airbnb check-in instructions & door code', 'Host contact info');
-      categories['Documents & Essentials'] = docs;
+      const anyLight = family.members.some(m => m.packStyle === 'light');
+      if (anyLight) docs.push('Check airline carry-on size limits if packing light');
+      categories['Documents & Essentials'] = { items: docs };
 
       if (intl) {
         const intlItems = [];
@@ -558,19 +636,16 @@
           'Water safety: avoid tap water & unknown ice',
           'Insect repellent (DEET-based)', 'Motion sickness meds if relevant'
         );
-        categories['International Essentials'] = intlItems;
+        categories['International Essentials'] = { items: intlItems };
       }
 
-      // Health
       const health = [];
       family.members.forEach(m => {
-        if (m.role === 'adult') health.push(`Pain relievers — adult (${m.name})`);
-        else health.push(`Pain reliever — kids for ${m.name}`);
+        health.push(m.role === 'adult' ? `Pain relievers — adult (${m.name})` : `Pain reliever — kids for ${m.name}`);
       });
       health.push('Allergy medicine', 'Band-aids & blister pads', 'Thermometer', 'Any prescription medications', 'Hand sanitizer', 'Eye drops');
-      categories['Health & Safety'] = health;
+      categories['Health & Safety'] = { items: health };
 
-      // Kids entertainment
       const kids = family.members.filter(m => m.role === 'kid' || m.role === 'toddler');
       if (kids.length) {
         const ent = [];
@@ -579,35 +654,18 @@
         });
         ent.push('Coloring books or activity pad', 'Snacks for travel day');
         if (tripType === 'beach') ent.push('Sand toys', 'Floaties / swim vest');
-        categories['Kids Entertainment'] = ent;
+        categories['Kids Entertainment'] = { items: ent };
       }
 
-      // Baby gear
       const babies = family.members.filter(m => m.role === 'baby' || m.role === 'toddler');
       if (babies.length) {
-        categories['Baby & Toddler Gear'] = [
-          'Stroller', 'Car seat (if needed)', 'Baby monitor',
-          'Portable crib / pack n play', 'Changing pad',
-          'Baby food / snacks', 'Sippy cups / bottles', 'Bibs',
-        ];
+        categories['Baby & Toddler Gear'] = { items: ['Stroller', 'Car seat (if needed)', 'Baby monitor', 'Portable crib / pack n play', 'Changing pad', 'Baby food / snacks', 'Sippy cups / bottles', 'Bibs'] };
       }
 
-      if (tripType === 'beach') {
-        categories['Beach Extras'] = [
-          'Beach towels (check if resort provides)',
-          'Sunscreen — face sticks & body spray (everyone)',
-          'Snorkel gear', 'Waterproof phone case', 'Dry bag', 'Beach hats for everyone',
-        ];
-      }
-      if (tripType === 'cold') {
-        categories['Cold Weather Extras'] = ['Hand warmers', 'Ski passes / gear rentals info', 'Helmets (if skiing)', 'Goggles'];
-      }
-      if (tripType === 'camping') {
-        categories['Camping Gear'] = ['Tent & sleeping bags', 'Flashlights & lanterns', 'Bug spray', 'Camp chairs & table', 'Cooler & ice', 'Cooking supplies', 'Fire starters'];
-      }
-      if (accom === 'airbnb') {
-        categories['Rental Extras'] = ['Dish soap & sponge', 'Paper towels', 'Laundry detergent', 'Snacks & groceries on arrival', 'Trash bags'];
-      }
+      if (tripType === 'beach') categories['Beach Extras'] = { items: ['Beach towels (check if resort provides)', 'Sunscreen — face sticks & body spray (everyone)', 'Snorkel gear', 'Waterproof phone case', 'Dry bag', 'Beach hats for everyone'] };
+      if (tripType === 'cold') categories['Cold Weather Extras'] = { items: ['Hand warmers', 'Ski passes / gear rentals info', 'Helmets (if skiing)', 'Goggles'] };
+      if (tripType === 'camping') categories['Camping Gear'] = { items: ['Tent & sleeping bags', 'Flashlights & lanterns', 'Bug spray', 'Camp chairs & table', 'Cooler & ice', 'Cooking supplies', 'Fire starters'] };
+      if (accom === 'airbnb') categories['Rental Extras'] = { items: ['Dish soap & sponge', 'Paper towels', 'Laundry detergent', 'Snacks & groceries on arrival', 'Trash bags'] };
 
       renderList(categories, intl, destination);
     }
@@ -616,17 +674,20 @@
     function getMemberColor(catName) {
       const key = catName.toLowerCase();
       for (let i = 0; i < family.members.length; i++) {
-        if (key.includes(family.members[i].name.toLowerCase())) {
-          return family.members[i].color;
-        }
+        if (key.includes(family.members[i].name.toLowerCase())) return family.members[i].color;
       }
       return null;
     }
 
     function getCatColor(cat, index) {
       const mc = getMemberColor(cat);
-      if (mc) return mc;
-      return catColors[index % catColors.length];
+      return mc || catColors[index % catColors.length];
+    }
+
+    function packStyleLabel(style) {
+      if (style === 'light') return 'Light Packer';
+      if (style === 'full')  return 'Full Packer';
+      return 'Medium Packer';
     }
 
     function renderList(categories, intl, destination) {
@@ -641,16 +702,17 @@
       document.getElementById('intlBadge').innerHTML = intl
         ? `<div class="intl-badge">International trip to ${destination} — extra items included</div>` : '';
 
-      Object.entries(categories).forEach(([cat, items], index) => {
+      Object.entries(categories).forEach(([cat, data], index) => {
+        const items = data.items || data;
+        const packStyle = data.packStyle || null;
         const color = getCatColor(cat, index);
         const div = document.createElement('div');
         div.className = 'category';
         div.dataset.cat = cat;
-        div.dataset.color = color;
 
         const header = document.createElement('div');
         header.className = `cat-header cat-${color}`;
-        header.textContent = cat;
+        header.innerHTML = `<span>${cat}</span>${packStyle ? `<span class="pack-badge">${packStyleLabel(packStyle)}</span>` : ''}`;
         div.appendChild(header);
 
         const body = document.createElement('div');
