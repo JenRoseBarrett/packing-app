@@ -14,7 +14,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Nunito', sans-serif; background: var(--bg); color: #333; }
 
-    /* SETUP SCREEN */
     .setup-screen {
       min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
     }
@@ -79,10 +78,8 @@
     }
     .btn-start:hover { opacity: 0.88; }
 
-    /* MAIN APP */
     .main-app { display: none; }
 
-    /* STICKY DASHBOARD */
     .dashboard {
       position: sticky; top: 0; z-index: 100;
       background: linear-gradient(135deg, var(--pink), var(--coral), var(--teal));
@@ -166,10 +163,7 @@
 
     .category { margin-bottom: 24px; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
     .cat-header { padding: 10px 16px; font-size: 15px; font-weight: 900; color: white; display: flex; align-items: center; justify-content: space-between; }
-    .pack-badge {
-      font-size: 11px; font-weight: 800; padding: 2px 8px;
-      border-radius: 10px; background: rgba(255,255,255,0.25); color: white; letter-spacing: 0.3px;
-    }
+    .pack-badge { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 10px; background: rgba(255,255,255,0.25); color: white; }
     .cat-body { padding: 4px 0; }
 
     .item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); }
@@ -245,17 +239,14 @@
 </head>
 <body>
 
-  <!-- SETUP SCREEN -->
   <div class="setup-screen" id="setupScreen">
     <div class="setup-card">
       <h1>Family Packing App</h1>
       <p class="setup-sub">Let's set up your family profile — you only need to do this once!</p>
-
       <h3>What's your family name?</h3>
       <div class="family-name-row">
         <input type="text" id="familyName" placeholder="e.g. Barrett, Smith, Johnson...">
       </div>
-
       <h3>Who's in your family?</h3>
       <div class="member-headers">
         <span>Name</span><span>Role</span><span>Age</span><span>Gender</span><span></span>
@@ -266,7 +257,6 @@
     </div>
   </div>
 
-  <!-- MAIN APP -->
   <div class="main-app" id="mainApp">
     <div class="dashboard" id="dashboard">
       <div class="dash-top">
@@ -291,16 +281,13 @@
 
       <div class="card">
         <h2 style="color: var(--pink)">Trip Details</h2>
-
         <label>Destination</label>
         <input type="text" id="destination" placeholder="e.g. Cabo, Paris, Miami Beach">
-
         <label>Domestic or International?</label>
         <div class="toggle-group">
           <button class="toggle-btn active" data-color="pink" onclick="selectOne(this,'intl')" data-val="domestic">Domestic</button>
           <button class="toggle-btn" data-color="teal" onclick="selectOne(this,'intl')" data-val="international">International</button>
         </div>
-
         <label>Trip Type</label>
         <div class="toggle-group">
           <button class="toggle-btn active" data-color="coral" onclick="selectOne(this,'triptype')" data-val="beach">Beach</button>
@@ -308,7 +295,6 @@
           <button class="toggle-btn" data-color="purple" onclick="selectOne(this,'triptype')" data-val="city">City</button>
           <button class="toggle-btn" data-color="green" onclick="selectOne(this,'triptype')" data-val="camping">Camping</button>
         </div>
-
         <label>Accommodation Type</label>
         <div class="toggle-group">
           <button class="toggle-btn active" data-color="pink" onclick="selectOne(this,'accom')" data-val="allinclusive">All-Inclusive</button>
@@ -316,10 +302,8 @@
           <button class="toggle-btn" data-color="teal" onclick="selectOne(this,'accom')" data-val="airbnb">Airbnb / Rental</button>
           <button class="toggle-btn" data-color="green" onclick="selectOne(this,'accom')" data-val="camping">Camping</button>
         </div>
-
         <label>Number of Nights</label>
         <input type="number" id="nights" placeholder="e.g. 5" min="1">
-
         <button class="generate-btn" onclick="generateList()">Generate Packing List</button>
       </div>
 
@@ -337,7 +321,6 @@
     let family = null;
     let editMode = false;
 
-    // ── SETUP ──────────────────────────────────────────────
     function init() {
       const saved = localStorage.getItem('familyPackingData');
       if (saved) {
@@ -353,16 +336,17 @@
       const list = document.getElementById('memberList');
       const row = document.createElement('div');
       row.className = 'member-row';
+      const isAdult = role === 'adult';
       row.innerHTML = `
         <div class="member-row-top">
           <input type="text" placeholder="Name" value="${name}">
-          <select>
+          <select onchange="toggleAgeField(this)">
             <option value="adult" ${role==='adult'?'selected':''}>Adult</option>
             <option value="kid" ${role==='kid'?'selected':''}>Kid</option>
             <option value="toddler" ${role==='toddler'?'selected':''}>Toddler</option>
             <option value="baby" ${role==='baby'?'selected':''}>Baby</option>
           </select>
-          <input type="number" placeholder="Age" value="${age}" min="0" max="99">
+          <input type="number" placeholder="Age" value="${age}" min="0" max="99" style="display:${isAdult?'none':'block'}">
           <select>
             <option value="female" ${gender==='female'?'selected':''}>Female</option>
             <option value="male" ${gender==='male'?'selected':''}>Male</option>
@@ -380,6 +364,13 @@
         </div>
       `;
       list.appendChild(row);
+    }
+
+    function toggleAgeField(select) {
+      const row = select.closest('.member-row-top');
+      const ageInput = row.querySelector('input[type="number"]');
+      ageInput.style.display = select.value === 'adult' ? 'none' : 'block';
+      if (select.value === 'adult') ageInput.value = '';
     }
 
     function setPackStyle(btn, style) {
@@ -402,10 +393,12 @@
         const selects = row.querySelectorAll('select');
         const name = inputs[0].value.trim();
         if (!name) return;
+        const role = selects[0].value;
+        const ageInput = inputs[1];
         members.push({
           name,
-          role: selects[0].value,
-          age: inputs[1].value ? parseInt(inputs[1].value) : null,
+          role,
+          age: role !== 'adult' && ageInput.value ? parseInt(ageInput.value) : null,
           gender: selects[1].value,
           packStyle: getPackStyle(row),
           color: memberColors[members.length % memberColors.length]
@@ -460,7 +453,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ── HELPERS ────────────────────────────────────────────
     function selectOne(btn, group) {
       document.querySelectorAll(`[onclick*="'${group}'"]`).forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -473,11 +465,10 @@
       return m.age ? `${m.name} (age ${m.age})` : m.name;
     }
 
-    // ── PACKING QUANTITIES by style ────────────────────────
     function outfits(nights, style) {
       if (style === 'light')  return Math.ceil(nights / 2);
       if (style === 'full')   return nights + 2;
-      return nights + 1; // medium
+      return nights + 1;
     }
     function swimsuits(nights, style) {
       if (style === 'light')  return Math.ceil(nights / 2);
@@ -490,9 +481,7 @@
       return Math.ceil(nights / 2);
     }
     function shoes(style, isFemale) {
-      if (style === 'light')  return isFemale
-        ? ['1 versatile sandal / sneaker', '1 dinner shoe']
-        : ['1 versatile shoe / sandal'];
+      if (style === 'light') return isFemale ? ['1 versatile sandal / sneaker', '1 dinner shoe'] : ['1 versatile shoe / sandal'];
       if (style === 'full' && isFemale) return ['Comfortable walking shoes', 'Sandals / flip flops', 'Dinner shoes', 'Workout shoes', 'Extra pair (just in case)'];
       if (isFemale) return ['Comfortable walking shoes', 'Sandals / flip flops', 'Dinner shoes', 'Workout shoes'];
       if (style === 'full') return ['Casual shoes / sandals', 'Dinner shoes', 'Extra sneakers'];
@@ -504,7 +493,6 @@
       return null;
     }
 
-    // ── LIST GENERATION ────────────────────────────────────
     function generateList() {
       const nights = parseInt(document.getElementById('nights').value) || 3;
       const tripType = getVal('triptype');
@@ -522,7 +510,6 @@
         const isMale = m.gender === 'male';
         const style = m.packStyle || 'medium';
         const note = packStyleNote(style);
-
         const clothing = [];
         if (note) clothing.push(`Note: ${note}`);
 
@@ -585,15 +572,11 @@
           );
         }
 
-        if (tripType === 'cold') {
-          clothing.push('Heavy coat', 'Gloves', isBaby ? 'Bunting / snowsuit' : 'Thermal underlayers');
-        }
+        if (tripType === 'cold') clothing.push('Heavy coat', 'Gloves', isBaby ? 'Bunting / snowsuit' : 'Thermal underlayers');
         if (style === 'light') clothing.push('Laundry bags — plan to wash mid-trip if needed');
-
         categories[`${ageLabel(m)}'s Clothing`] = { items: clothing, packStyle: style };
       });
 
-      // Toiletries
       const toiletries = ['Toothbrushes & toothpaste (all)', 'Shampoo & conditioner', 'Body wash / soap'];
       family.members.forEach(m => {
         if (m.role === 'adult' && m.gender === 'female') {
@@ -605,53 +588,34 @@
         if (m.role === 'toddler' || m.role === 'baby') toiletries.push(`Baby wash & lotion (${m.name})`, `Diapers & wipes (${m.name})`);
       });
       const hasLight = family.members.some(m => m.packStyle === 'light');
-      toiletries.push(
-        'After-sun lotion / aloe', 'Moisturizer', 'Razor & shaving cream',
-        'Hairdryer (check if provided)', 'Nail file & clippers', 'Q-tips & cotton pads', 'Lip balm',
-        ...(hasLight ? ['Consider solid shampoo bars & travel-size toiletries to save space'] : []),
-      );
+      toiletries.push('After-sun lotion / aloe', 'Moisturizer', 'Razor & shaving cream', 'Hairdryer (check if provided)', 'Nail file & clippers', 'Q-tips & cotton pads', 'Lip balm',
+        ...(hasLight ? ['Consider solid shampoo bars & travel-size toiletries to save space'] : []));
       categories['Toiletries'] = { items: toiletries };
 
-      // Documents
       const docs = [];
       family.members.forEach(m => { if (m.role === 'adult') docs.push(`ID / Passport — ${m.name}`); });
       docs.push('Credit cards & cash', 'Phone chargers (all devices)', 'Portable battery pack', 'Headphones', 'Sunglasses for everyone', 'Beach bag / tote', 'Reusable water bottles');
       if (accom === 'allinclusive') docs.push('Resort confirmation & booking details', 'Room wristbands / key info');
       if (accom === 'airbnb') docs.push('Airbnb check-in instructions & door code', 'Host contact info');
-      const anyLight = family.members.some(m => m.packStyle === 'light');
-      if (anyLight) docs.push('Check airline carry-on size limits if packing light');
+      if (family.members.some(m => m.packStyle === 'light')) docs.push('Check airline carry-on size limits if packing light');
       categories['Documents & Essentials'] = { items: docs };
 
       if (intl) {
         const intlItems = [];
         family.members.forEach(m => intlItems.push(`Passport for ${m.name} — check expiration!`));
-        intlItems.push(
-          'Passport photocopies (stored separately)', 'Travel insurance documents',
-          'Entry requirements / visas', 'Notify bank & credit cards of travel',
-          'International power adapter', 'Local currency / USD for tips',
-          'Translation app downloaded offline', 'Embassy contact info saved',
-          'Prescription medications — extra supply', 'Travelers diarrhea medication (Imodium)',
-          'Antibiotic prescription (ask doctor)', 'Pepto-Bismol',
-          'Rehydration packets (Pedialyte / Liquid IV)',
-          'Water safety: avoid tap water & unknown ice',
-          'Insect repellent (DEET-based)', 'Motion sickness meds if relevant'
-        );
+        intlItems.push('Passport photocopies (stored separately)', 'Travel insurance documents', 'Entry requirements / visas', 'Notify bank & credit cards of travel', 'International power adapter', 'Local currency / USD for tips', 'Translation app downloaded offline', 'Embassy contact info saved', 'Prescription medications — extra supply', 'Travelers diarrhea medication (Imodium)', 'Antibiotic prescription (ask doctor)', 'Pepto-Bismol', 'Rehydration packets (Pedialyte / Liquid IV)', 'Water safety: avoid tap water & unknown ice', 'Insect repellent (DEET-based)', 'Motion sickness meds if relevant');
         categories['International Essentials'] = { items: intlItems };
       }
 
       const health = [];
-      family.members.forEach(m => {
-        health.push(m.role === 'adult' ? `Pain relievers — adult (${m.name})` : `Pain reliever — kids for ${m.name}`);
-      });
+      family.members.forEach(m => { health.push(m.role === 'adult' ? `Pain relievers — adult (${m.name})` : `Pain reliever — kids for ${m.name}`); });
       health.push('Allergy medicine', 'Band-aids & blister pads', 'Thermometer', 'Any prescription medications', 'Hand sanitizer', 'Eye drops');
       categories['Health & Safety'] = { items: health };
 
       const kids = family.members.filter(m => m.role === 'kid' || m.role === 'toddler');
       if (kids.length) {
         const ent = [];
-        kids.forEach(m => {
-          ent.push(`iPad / tablet for ${m.name} (download shows)`, `Headphones for ${m.name}`, `Favorite toy / stuffed animal (${m.name})`);
-        });
+        kids.forEach(m => { ent.push(`iPad / tablet for ${m.name} (download shows)`, `Headphones for ${m.name}`, `Favorite toy / stuffed animal (${m.name})`); });
         ent.push('Coloring books or activity pad', 'Snacks for travel day');
         if (tripType === 'beach') ent.push('Sand toys', 'Floaties / swim vest');
         categories['Kids Entertainment'] = { items: ent };
@@ -670,7 +634,6 @@
       renderList(categories, intl, destination);
     }
 
-    // ── RENDERING ──────────────────────────────────────────
     function getMemberColor(catName) {
       const key = catName.toLowerCase();
       for (let i = 0; i < family.members.length; i++) {
@@ -678,12 +641,9 @@
       }
       return null;
     }
-
     function getCatColor(cat, index) {
-      const mc = getMemberColor(cat);
-      return mc || catColors[index % catColors.length];
+      return getMemberColor(cat) || catColors[index % catColors.length];
     }
-
     function packStyleLabel(style) {
       if (style === 'light') return 'Light Packer';
       if (style === 'full')  return 'Full Packer';
@@ -694,7 +654,6 @@
       editMode = false;
       document.getElementById('editModeBtn').textContent = 'Edit List';
       document.getElementById('editModeBtn').classList.remove('active');
-
       const container = document.getElementById('packingList');
       container.innerHTML = '';
       container.classList.remove('edit-on');
@@ -739,44 +698,35 @@
     function createItemRow(text, color) {
       const row = document.createElement('div');
       row.className = 'item';
-
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.onchange = function() { updateProgress(this); };
-
       const labelEl = document.createElement('span');
       labelEl.className = 'item-label';
       labelEl.textContent = text;
-
       const editInput = document.createElement('input');
       editInput.type = 'text';
       editInput.className = 'item-input';
       editInput.value = text;
       editInput.onkeydown = function(e) { if (e.key === 'Enter') saveEdit(row); };
-
       const controls = document.createElement('div');
       controls.className = 'item-edit-controls';
-
       const editBtn = document.createElement('button');
       editBtn.className = 'btn-edit';
       editBtn.textContent = 'Edit';
       editBtn.onclick = () => startEdit(row, editInput);
-
       const saveBtn = document.createElement('button');
       saveBtn.className = 'btn-save';
       saveBtn.textContent = 'Save';
       saveBtn.style.display = 'none';
       saveBtn.onclick = () => saveEdit(row);
-
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'btn-delete';
       deleteBtn.textContent = 'Delete';
       deleteBtn.onclick = () => { row.remove(); updateProgress(); };
-
       controls.appendChild(editBtn);
       controls.appendChild(saveBtn);
       controls.appendChild(deleteBtn);
-
       row.appendChild(checkbox);
       row.appendChild(labelEl);
       row.appendChild(editInput);
@@ -826,7 +776,6 @@
       }
     }
 
-    // ── PROGRESS ───────────────────────────────────────────
     function getMemberPct(name) {
       const key = name.toLowerCase();
       const cats = [...document.querySelectorAll('.category')].filter(d => d.dataset.cat.toLowerCase().includes(key));
@@ -838,13 +787,11 @@
 
     function updateProgress(checkbox) {
       if (checkbox) checkbox.parentElement.classList.toggle('checked', checkbox.checked);
-
       const all = [...document.querySelectorAll('#packingList input[type="checkbox"]')];
       const checked = all.filter(c => c.checked);
       const pct = all.length ? Math.round((checked.length / all.length) * 100) : 0;
       document.getElementById('dashPct').textContent = pct + '%';
       document.getElementById('dashBar').style.width = pct + '%';
-
       family.members.forEach(m => {
         const slug = m.name.toLowerCase().replace(/\s/g,'-');
         const p = getMemberPct(m.name);
@@ -853,7 +800,6 @@
         if (pctEl) pctEl.textContent = p + '%';
         if (barEl) barEl.style.width = p + '%';
       });
-
       const catsEl = document.getElementById('dashCats');
       catsEl.innerHTML = '';
       document.querySelectorAll('.category').forEach(catDiv => {
