@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Packing App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pink: #e91e8c; --coral: #ff5757; --teal: #00b4a6;
+      --yellow: #ffd93d; --purple: #7c3aed; --green: #06d6a0;
+      --blue: #3b82f6; --bg: #fff5f8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: #333; }
+
+    /* SETUP SCREEN */
+    .setup-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .setup-card {
+      background: white; border-radius: 24px; padding: 36px;
+      max-width: 560px; width: 100%;
+      box-shadow: 0 8px 32px rgba(233,30,140,0.12);
+    }
+    .setup-card h1 {
+      font-size: 28px; font-weight: 900; margin-bottom: 6px;
+      background: linear-gradient(135deg, var(--pink), var(--coral), var(--teal));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .setup-card .setup-sub { color: #aaa; font-size: 14px; font-weight: 600; margin-bottom: 28px; }
+    .setup-card h3 { font-size: 16px; font-weight: 800; color: var(--pink); margin-bottom: 14px; }
+
+    .family-name-row { display: flex; gap: 10px; margin-bottom: 24px; }
+    .family-name-row input { flex: 1; }
+
+    .member-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .member-row {
+      display: grid; grid-template-columns: 1fr 110px 70px 100px 36px;
+      gap: 8px; align-items: center;
+    }
+    .member-row input, .member-row select {
+      padding: 9px 12px; border: 2px solid #f0e0ee; border-radius: 10px;
+      font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600;
+      outline: none; color: #333; width: 100%; margin-bottom: 0;
+    }
+    .member-row input:focus, .member-row select:focus { border-color: var(--pink); }
+    .member-row .btn-remove-member {
+      background: #ffe0e0; color: var(--coral); border: none;
+      border-radius: 8px; width: 36px; height: 36px; font-size: 16px;
+      cursor: pointer; font-weight: 900; display: flex; align-items: center; justify-content: center;
+    }
+    .member-headers {
+      display: grid; grid-template-columns: 1fr 110px 70px 100px 36px;
+      gap: 8px; margin-bottom: 6px;
+    }
+    .member-headers span { font-size: 12px; font-weight: 700; color: #aaa; padding-left: 4px; }
+
+    .btn-add-member {
+      background: #f0faf9; color: var(--teal); border: 2px dashed var(--teal);
+      border-radius: 10px; padding: 9px 16px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 14px; cursor: pointer; width: 100%; margin-bottom: 24px;
+      transition: background 0.2s;
+    }
+    .btn-add-member:hover { background: #e0f7f5; }
+
+    .btn-start {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, var(--pink), var(--coral), var(--teal));
+      color: white; border: none; border-radius: 14px;
+      font-size: 17px; font-family: 'Nunito', sans-serif;
+      cursor: pointer; font-weight: 900; transition: opacity 0.2s;
+      box-shadow: 0 4px 16px rgba(233,30,140,0.3);
+    }
+    .btn-start:hover { opacity: 0.88; }
+
+    /* MAIN APP */
+    .main-app { display: none; }
+
+    /* STICKY DASHBOARD */
+    .dashboard {
+      position: sticky; top: 0; z-index: 100;
+      background: linear-gradient(135deg, var(--pink), var(--coral), var(--teal));
+      color: white; padding: 14px 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: none;
+    }
+    .dashboard.visible { display: block; }
+    .dash-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .dash-title { font-weight: 900; font-size: 15px; }
+    .dash-right { display: flex; align-items: center; gap: 10px; }
+    .dash-pct { font-size: 26px; font-weight: 900; }
+    .edit-mode-btn, .reset-btn {
+      border: 2px solid white; color: white; border-radius: 20px;
+      padding: 4px 12px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s;
+      background: rgba(255,255,255,0.2);
+    }
+    .edit-mode-btn.active { background: white; color: var(--pink); }
+    .reset-btn:hover { background: rgba(255,255,255,0.35); }
+    .dash-bar-wrap { background: rgba(255,255,255,0.3); border-radius: 8px; height: 10px; margin-bottom: 12px; }
+    .dash-bar { background: white; height: 10px; border-radius: 8px; transition: width 0.4s ease; }
+    .dash-people { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    .dash-person {
+      border-radius: 12px; padding: 7px 14px; font-size: 13px; flex: 1;
+      text-align: center; background: rgba(255,255,255,0.2); min-width: 80px;
+    }
+    .dash-person .name { font-weight: 900; margin-bottom: 2px; font-size: 14px; }
+    .dash-person .mini-bar-wrap { background: rgba(255,255,255,0.3); border-radius: 4px; height: 5px; margin-top: 5px; }
+    .dash-person .mini-bar { height: 5px; border-radius: 4px; transition: width 0.4s ease; background: white; }
+    .dash-categories { display: flex; gap: 8px; flex-wrap: wrap; }
+    .dash-cat { border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.2); }
+    .dash-cat.done { background: rgba(255,255,255,0.5); }
+
+    .container { max-width: 700px; margin: 36px auto; padding: 20px; }
+    .hero { text-align: center; margin-bottom: 28px; }
+    .hero h1 {
+      font-size: 30px; font-weight: 900; margin-bottom: 4px;
+      background: linear-gradient(135deg, var(--pink), var(--coral), var(--teal));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero .subtitle { color: #bbb; font-size: 14px; font-weight: 700; }
+
+    .card { background: white; border-radius: 20px; padding: 26px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+    h2 { font-size: 20px; font-weight: 900; margin-bottom: 18px; }
+    label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #777; }
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 11px 14px; border: 2px solid #f0e0ee;
+      border-radius: 12px; font-size: 14px; font-family: 'Nunito', sans-serif;
+      margin-bottom: 18px; outline: none; color: #333; transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--pink); }
+
+    .toggle-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .toggle-btn {
+      padding: 8px 18px; border: 2.5px solid; border-radius: 20px;
+      background: white; cursor: pointer; font-size: 14px;
+      font-family: 'Nunito', sans-serif; font-weight: 700; transition: all 0.2s;
+    }
+    .toggle-btn[data-color="pink"]   { border-color: var(--pink);   color: var(--pink); }
+    .toggle-btn[data-color="coral"]  { border-color: var(--coral);  color: var(--coral); }
+    .toggle-btn[data-color="teal"]   { border-color: var(--teal);   color: var(--teal); }
+    .toggle-btn[data-color="purple"] { border-color: var(--purple); color: var(--purple); }
+    .toggle-btn[data-color="blue"]   { border-color: var(--blue);   color: var(--blue); }
+    .toggle-btn[data-color="green"]  { border-color: var(--green);  color: var(--green); }
+    .toggle-btn[data-color="pink"].active   { background: var(--pink);   color: white; }
+    .toggle-btn[data-color="coral"].active  { background: var(--coral);  color: white; }
+    .toggle-btn[data-color="teal"].active   { background: var(--teal);   color: white; }
+    .toggle-btn[data-color="purple"].active { background: var(--purple); color: white; }
+    .toggle-btn[data-color="blue"].active   { background: var(--blue);   color: white; }
+    .toggle-btn[data-color="green"].active  { background: var(--green);  color: white; }
+
+    .generate-btn {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, var(--pink), var(--coral), var(--teal));
+      color: white; border: none; border-radius: 14px;
+      font-size: 17px; font-family: 'Nunito', sans-serif;
+      cursor: pointer; font-weight: 900; transition: opacity 0.2s;
+      box-shadow: 0 4px 16px rgba(233,30,140,0.3);
+    }
+    .generate-btn:hover { opacity: 0.88; }
+
+    .category { margin-bottom: 24px; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .cat-header { padding: 10px 16px; font-size: 15px; font-weight: 900; color: white; }
+    .cat-body { padding: 4px 0; }
+
+    .item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid rgba(0,0,0,0.04); }
+    .item:last-child { border-bottom: none; }
+    .item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; }
+    .item .item-label { font-weight: 600; font-size: 15px; cursor: pointer; flex: 1; }
+    .item.checked .item-label { text-decoration: line-through; color: #ccc; }
+
+    .item-edit-controls { display: none; align-items: center; gap: 6px; margin-left: auto; }
+    .edit-on .item-edit-controls { display: flex; }
+    .edit-on .item input[type="checkbox"] { display: none; }
+    .edit-on .item.checked .item-label { text-decoration: none; color: #333; }
+
+    .btn-edit, .btn-delete {
+      border: none; border-radius: 8px; padding: 4px 10px;
+      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    .btn-edit   { background: #f0f0f0; color: #555; }
+    .btn-delete { background: #ffe0e0; color: var(--coral); }
+
+    .item-input {
+      flex: 1; border: 2px solid #ddd; border-radius: 8px;
+      padding: 4px 10px; font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 600; outline: none; display: none; margin-bottom: 0;
+    }
+    .item-input:focus { border-color: var(--pink); }
+    .editing .item-label { display: none; }
+    .editing .item-input { display: block; }
+    .btn-save {
+      border: none; border-radius: 8px; padding: 4px 10px;
+      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px;
+      cursor: pointer; background: var(--teal); color: white;
+    }
+
+    .add-item-row {
+      display: none; align-items: center; gap: 8px;
+      padding: 10px 16px; border-top: 2px dashed rgba(0,0,0,0.08);
+    }
+    .edit-on .add-item-row { display: flex; }
+    .add-item-input {
+      flex: 1; border: 2px solid #ddd; border-radius: 8px;
+      padding: 6px 12px; font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 600; outline: none; margin-bottom: 0;
+    }
+    .add-item-input:focus { border-color: var(--teal); }
+    .btn-add {
+      border: none; border-radius: 8px; padding: 6px 14px;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;
+      cursor: pointer; color: white; white-space: nowrap;
+    }
+
+    .intl-badge {
+      display: inline-block; border-radius: 12px; padding: 6px 14px;
+      font-size: 13px; font-weight: 700; margin-bottom: 18px;
+      background: #e8f8f6; color: var(--teal); border: 2px solid var(--teal);
+    }
+
+    .cat-pink   { background: var(--pink); } .cat-coral  { background: var(--coral); }
+    .cat-teal   { background: var(--teal); } .cat-purple { background: var(--purple); }
+    .cat-blue   { background: var(--blue); } .cat-green  { background: var(--green); }
+    .cat-yellow { background: #f5c300; }
+
+    .cat-pink-bg   { background: #fff0f8; } .cat-coral-bg  { background: #fff3f3; }
+    .cat-teal-bg   { background: #f0faf9; } .cat-purple-bg { background: #f5f0ff; }
+    .cat-blue-bg   { background: #f0f5ff; } .cat-green-bg  { background: #f0fdf8; }
+    .cat-yellow-bg { background: #fffbea; }
+
+    .cat-pink-add { background: var(--pink); } .cat-coral-add { background: var(--coral); }
+    .cat-teal-add { background: var(--teal); } .cat-purple-add { background: var(--purple); }
+    .cat-blue-add { background: var(--blue); } .cat-green-add { background: var(--green); }
+    .cat-yellow-add { background: #f5c300; }
+  </style>
+</head>
+<body>
+
+  <!-- SETUP SCREEN -->
+  <div class="setup-screen" id="setupScreen">
+    <div class="setup-card">
+      <h1>Family Packing App</h1>
+      <p class="setup-sub">Let's set up your family profile — you only need to do this once!</p>
+
+      <h3>What's your family name?</h3>
+      <div class="family-name-row">
+        <input type="text" id="familyName" placeholder="e.g. Barrett, Smith, Johnson...">
+      </div>
+
+      <h3>Who's in your family?</h3>
+      <div class="member-headers">
+        <span>Name</span><span>Role</span><span>Age</span><span>Gender</span><span></span>
+      </div>
+      <div class="member-list" id="memberList"></div>
+      <button class="btn-add-member" onclick="addMemberRow()">+ Add Family Member</button>
+
+      <button class="btn-start" onclick="saveFamily()">Let's Pack!</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="main-app" id="mainApp">
+    <div class="dashboard" id="dashboard">
+      <div class="dash-top">
+        <div class="dash-title" id="dashTitle">Packing Progress</div>
+        <div class="dash-right">
+          <button class="reset-btn" onclick="updateTrip()">Update Trip</button>
+<button class="reset-btn" onclick="resetFamily()">Change Family</button>
+          <button class="edit-mode-btn" id="editModeBtn" onclick="toggleEditMode()">Edit List</button>
+          <div class="dash-pct" id="dashPct">0%</div>
+        </div>
+      </div>
+      <div class="dash-bar-wrap"><div class="dash-bar" id="dashBar" style="width:0%"></div></div>
+      <div class="dash-people" id="dashPeople"></div>
+      <div class="dash-categories" id="dashCats"></div>
+    </div>
+
+    <div class="container">
+      <div class="hero">
+        <h1 id="appTitle">Family Packing</h1>
+        <p class="subtitle" id="appSubtitle"></p>
+      </div>
+
+      <div class="card">
+        <h2 style="color: var(--pink)">Trip Details</h2>
+
+        <label>Destination</label>
+        <input type="text" id="destination" placeholder="e.g. Cabo, Paris, Miami Beach">
+
+        <label>Domestic or International?</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-color="pink" onclick="selectOne(this,'intl')" data-val="domestic">Domestic</button>
+          <button class="toggle-btn" data-color="teal" onclick="selectOne(this,'intl')" data-val="international">International</button>
+        </div>
+
+        <label>Trip Type</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-color="coral" onclick="selectOne(this,'triptype')" data-val="beach">Beach</button>
+          <button class="toggle-btn" data-color="blue" onclick="selectOne(this,'triptype')" data-val="cold">Cold Weather</button>
+          <button class="toggle-btn" data-color="purple" onclick="selectOne(this,'triptype')" data-val="city">City</button>
+          <button class="toggle-btn" data-color="green" onclick="selectOne(this,'triptype')" data-val="camping">Camping</button>
+        </div>
+
+        <label>Accommodation Type</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-color="pink" onclick="selectOne(this,'accom')" data-val="allinclusive">All-Inclusive</button>
+          <button class="toggle-btn" data-color="coral" onclick="selectOne(this,'accom')" data-val="hotel">Hotel</button>
+          <button class="toggle-btn" data-color="teal" onclick="selectOne(this,'accom')" data-val="airbnb">Airbnb / Rental</button>
+          <button class="toggle-btn" data-color="green" onclick="selectOne(this,'accom')" data-val="camping">Camping</button>
+        </div>
+
+        <label>Number of Nights</label>
+        <input type="number" id="nights" placeholder="e.g. 5" min="1">
+
+        <button class="generate-btn" onclick="generateList()">Generate Packing List</button>
+      </div>
+
+      <div class="card" id="listCard" style="display:none;">
+        <h2 style="background: linear-gradient(135deg, var(--pink), var(--teal)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Your Packing List</h2>
+        <div id="intlBadge"></div>
+        <div id="packingList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const catColors = ['pink','coral','teal','purple','blue','green','yellow'];
+    const memberColors = ['pink','teal','yellow','purple','coral','blue','green'];
+    let family = null;
+    let editMode = false;
+
+    // ── SETUP ──────────────────────────────────────────────
+    function init() {
+      const saved = localStorage.getItem('familyPackingData');
+      if (saved) {
+        family = JSON.parse(saved);
+        showMainApp();
+      } else {
+        addMemberRow();
+        addMemberRow();
+        document.getElementById('setupScreen').style.display = 'flex';
+      }
+    }
+
+    function addMemberRow(name='', role='adult', age='', gender='') {
+      const list = document.getElementById('memberList');
+      const row = document.createElement('div');
+      row.className = 'member-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Name" value="${name}">
+        <select>
+          <option value="adult" ${role==='adult'?'selected':''}>Adult</option>
+          <option value="kid" ${role==='kid'?'selected':''}>Kid</option>
+          <option value="toddler" ${role==='toddler'?'selected':''}>Toddler</option>
+          <option value="baby" ${role==='baby'?'selected':''}>Baby</option>
+        </select>
+        <input type="number" placeholder="Age" value="${age}" min="0" max="99">
+        <select>
+          <option value="female" ${gender==='female'?'selected':''}>Female</option>
+          <option value="male" ${gender==='male'?'selected':''}>Male</option>
+          <option value="neutral" ${gender==='neutral'?'selected':''}>Neutral</option>
+        </select>
+        <button class="btn-remove-member" onclick="this.closest('.member-row').remove()">×</button>
+      `;
+      list.appendChild(row);
+    }
+
+    function saveFamily() {
+      const familyName = document.getElementById('familyName').value.trim() || 'Our';
+      const rows = document.querySelectorAll('#memberList .member-row');
+      const members = [];
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const selects = row.querySelectorAll('select');
+        const name = inputs[0].value.trim();
+        if (!name) return;
+        members.push({
+          name,
+          role: selects[0].value,
+          age: inputs[1].value ? parseInt(inputs[1].value) : null,
+          gender: selects[1].value,
+          color: memberColors[members.length % memberColors.length]
+        });
+      });
+      if (!members.length) { alert('Please add at least one family member!'); return; }
+      family = { familyName, members };
+      localStorage.setItem('familyPackingData', JSON.stringify(family));
+      showMainApp();
+    }
+
+    function showMainApp() {
+      document.getElementById('setupScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+
+      // Set title & subtitle
+      document.getElementById('appTitle').textContent = `${family.familyName} Family Packing`;
+      document.getElementById('appSubtitle').textContent = family.members.map(m =>
+        m.age ? `${m.name} (${m.age})` : m.name
+      ).join(' · ');
+      document.getElementById('dashTitle').textContent = `${family.familyName} Family — Packing Progress`;
+
+      // Build dashboard people
+      const dashPeople = document.getElementById('dashPeople');
+      dashPeople.innerHTML = '';
+      family.members.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'dash-person';
+        div.id = `dash-${m.name.toLowerCase().replace(/\s/g,'-')}`;
+        div.style.background = `rgba(255,255,255,0.2)`;
+        div.innerHTML = `
+          <div class="name">${m.name}</div>
+          <div id="pct-${m.name.toLowerCase().replace(/\s/g,'-')}">0%</div>
+          <div class="mini-bar-wrap">
+            <div class="mini-bar" id="bar-${m.name.toLowerCase().replace(/\s/g,'-')}" style="width:0%"></div>
+          </div>
+        `;
+        dashPeople.appendChild(div);
+      });
+    }
+
+    function updateTrip() {
+  document.getElementById('listCard').style.display = 'none';
+  document.getElementById('dashboard').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}function resetFamily() {
+      if (!confirm('Reset family profile? This will clear your saved family info.')) return;
+      localStorage.removeItem('familyPackingData');
+      family = null;
+      document.getElementById('mainApp').style.display = 'none';
+      document.getElementById('memberList').innerHTML = '';
+      document.getElementById('familyName').value = '';
+      document.getElementById('listCard').style.display = 'none';
+      document.getElementById('dashboard').classList.remove('visible');
+      addMemberRow(); addMemberRow();
+      document.getElementById('setupScreen').style.display = 'flex';
+    }
+
+    // ── LIST GENERATION ────────────────────────────────────
+    function selectOne(btn, group) {
+      document.querySelectorAll(`[onclick*="'${group}'"]`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    function getVal(group) {
+      const btn = document.querySelector(`[onclick*="'${group}'"].active`);
+      return btn ? btn.dataset.val : null;
+    }
+
+    function ageLabel(m) {
+      if (m.age) return `${m.name} (age ${m.age})`;
+      return m.name;
+    }
+
+    function generateList() {
+      const nights = parseInt(document.getElementById('nights').value) || 3;
+      const tripType = getVal('triptype');
+      const accom = getVal('accom');
+      const intl = getVal('intl') === 'international';
+      const destination = document.getElementById('destination').value || 'your destination';
+      const categories = {};
+
+      family.members.forEach(m => {
+        const isKid = m.role === 'kid';
+        const isToddler = m.role === 'toddler';
+        const isBaby = m.role === 'baby';
+        const isAdult = m.role === 'adult';
+        const isFemale = m.gender === 'female';
+        const isMale = m.gender === 'male';
+
+        const clothing = [
+          `Outfits: ${nights + 1}`,
+          ...(isAdult && isFemale ? [
+            `Swimsuits: ${nights} (one per day)`,
+            `Cover-ups: ${Math.ceil(nights/2)} (for lunches)`,
+            `Workout clothes: ${nights} sets`,
+            `Dinner outfits: ${nights}`,
+            `Pajamas: ${Math.ceil(nights/2)}`,
+            `Underwear & socks: ${nights + 2} pairs`,
+            'Comfortable walking shoes', 'Sandals / flip flops', 'Dinner shoes', 'Workout shoes',
+          ] : []),
+          ...(isAdult && isMale ? [
+            `Swimsuits: ${nights} (one per day)`,
+            `Cover-ups / shirts for lunch: ${Math.ceil(nights/2)}`,
+            `Dinner outfits: ${nights}`,
+            `Pajamas: ${Math.ceil(nights/2)}`,
+            `Underwear & socks: ${nights + 2} pairs`,
+            'Casual shoes / sandals', 'Dinner shoes',
+          ] : []),
+          ...(isAdult && m.gender === 'neutral' ? [
+            `Swimsuits: ${nights} (one per day)`,
+            `Dinner outfits: ${nights}`,
+            `Pajamas: ${Math.ceil(nights/2)}`,
+            `Underwear & socks: ${nights + 2} pairs`,
+            'Shoes (casual & dinner)',
+          ] : []),
+          ...(isKid ? [
+            `Swimsuits: ${nights} (one per day)`,
+            `Cover-up for lunch: ${Math.ceil(nights/2)}`,
+            `Play clothes: ${nights} sets`,
+            `Dinner outfits: ${nights}`,
+            `Pajamas: ${nights}`,
+            `Underwear & socks: ${nights + 2} pairs`,
+            'Water shoes / sandals', 'Sneakers for play',
+            ...(isFemale ? ['Hair ties & accessories'] : []),
+          ] : []),
+          ...(isToddler ? [
+            `Swimsuits: ${nights}`,
+            `Play outfits: ${nights + 1}`,
+            `Pajamas: ${nights}`,
+            `Underwear & socks: ${nights + 2} pairs`,
+            'Water shoes / sandals',
+            ...(isFemale ? ['Hair clips / ties'] : []),
+          ] : []),
+          ...(isBaby ? [
+            `Onesies: ${(nights + 1) * 2}`,
+            `Sleep sacks / pajamas: ${nights + 1}`,
+            `Socks & hats: ${nights + 2} pairs`,
+          ] : []),
+          ...(tripType === 'cold' ? ['Heavy coat', 'Gloves', m.role === 'baby' ? 'Bunting / snowsuit' : 'Thermal underlayers'] : []),
+        ];
+        categories[`${ageLabel(m)}'s Clothing`] = clothing;
+      });
+
+      // Toiletries — personalized
+      const toiletries = ['Toothbrushes & toothpaste (all)', 'Shampoo & conditioner', 'Body wash / soap'];
+      family.members.forEach(m => {
+        if (m.role === 'adult' && m.gender === 'female') {
+          toiletries.push(`Makeup & remover (${m.name})`, `Hair products (${m.name})`, `Feminine hygiene (${m.name})`);
+        }
+        if (m.role === 'adult') toiletries.push(`Deodorant (${m.name})`);
+        if (m.role === 'kid' && m.gender === 'female') toiletries.push(`Kids detangler & brush (${m.name})`);
+        if (m.role === 'toddler' || m.role === 'baby') toiletries.push(`Baby wash & lotion (${m.name})`, `Diapers & wipes (${m.name})`);
+      });
+      toiletries.push('After-sun lotion / aloe', 'Moisturizer', 'Razor & shaving cream', 'Hairdryer (check if provided)', 'Nail file & clippers', 'Q-tips & cotton pads', 'Lip balm');
+      categories['Toiletries'] = toiletries;
+
+      // Documents
+      const docs = [];
+      family.members.forEach(m => {
+        if (m.role === 'adult') docs.push(`ID / Passport — ${m.name}`);
+      });
+      docs.push('Credit cards & cash', 'Phone chargers (all devices)', 'Portable battery pack', 'Headphones', 'Sunglasses for everyone', 'Beach bag / tote', 'Reusable water bottles');
+      if (accom === 'allinclusive') docs.push('Resort confirmation & booking details', 'Room wristbands / key info');
+      if (accom === 'airbnb') docs.push('Airbnb check-in instructions & door code', 'Host contact info');
+      categories['Documents & Essentials'] = docs;
+
+      if (intl) {
+        const intlItems = [];
+        family.members.forEach(m => intlItems.push(`Passport for ${m.name} — check expiration!`));
+        intlItems.push(
+          'Passport photocopies (stored separately)', 'Travel insurance documents',
+          'Entry requirements / visas', 'Notify bank & credit cards of travel',
+          'International power adapter', 'Local currency / USD for tips',
+          'Translation app downloaded offline', 'Embassy contact info saved',
+          'Prescription medications — extra supply', 'Travelers diarrhea medication (Imodium)',
+          'Antibiotic prescription (ask doctor)', 'Pepto-Bismol',
+          'Rehydration packets (Pedialyte / Liquid IV)',
+          'Water safety: avoid tap water & unknown ice',
+          'Insect repellent (DEET-based)', 'Motion sickness meds if relevant'
+        );
+        categories['International Essentials'] = intlItems;
+      }
+
+      // Health
+      const health = [];
+      family.members.forEach(m => {
+        if (m.role === 'adult') health.push(`Pain relievers — adult (${m.name})`);
+        else health.push(`Pain reliever — kids for ${m.name}`);
+      });
+      health.push('Allergy medicine', 'Band-aids & blister pads', 'Thermometer', 'Any prescription medications', 'Hand sanitizer', 'Eye drops');
+      categories['Health & Safety'] = health;
+
+      // Kids entertainment
+      const kids = family.members.filter(m => m.role === 'kid' || m.role === 'toddler');
+      if (kids.length) {
+        const ent = [];
+        kids.forEach(m => {
+          ent.push(`iPad / tablet for ${m.name} (download shows)`, `Headphones for ${m.name}`, `Favorite toy / stuffed animal (${m.name})`);
+        });
+        ent.push('Coloring books or activity pad', 'Snacks for travel day');
+        if (tripType === 'beach') ent.push('Sand toys', 'Floaties / swim vest');
+        categories['Kids Entertainment'] = ent;
+      }
+
+      // Baby gear
+      const babies = family.members.filter(m => m.role === 'baby' || m.role === 'toddler');
+      if (babies.length) {
+        categories['Baby & Toddler Gear'] = [
+          'Stroller', 'Car seat (if needed)', 'Baby monitor',
+          'Portable crib / pack n play', 'Changing pad',
+          'Baby food / snacks', 'Sippy cups / bottles', 'Bibs',
+        ];
+      }
+
+      if (tripType === 'beach') {
+        categories['Beach Extras'] = [
+          'Beach towels (check if resort provides)',
+          'Sunscreen — face sticks & body spray (everyone)',
+          'Snorkel gear', 'Waterproof phone case', 'Dry bag', 'Beach hats for everyone',
+        ];
+      }
+      if (tripType === 'cold') {
+        categories['Cold Weather Extras'] = ['Hand warmers', 'Ski passes / gear rentals info', 'Helmets (if skiing)', 'Goggles'];
+      }
+      if (tripType === 'camping') {
+        categories['Camping Gear'] = ['Tent & sleeping bags', 'Flashlights & lanterns', 'Bug spray', 'Camp chairs & table', 'Cooler & ice', 'Cooking supplies', 'Fire starters'];
+      }
+      if (accom === 'airbnb') {
+        categories['Rental Extras'] = ['Dish soap & sponge', 'Paper towels', 'Laundry detergent', 'Snacks & groceries on arrival', 'Trash bags'];
+      }
+
+      renderList(categories, intl, destination);
+    }
+
+    // ── RENDERING ──────────────────────────────────────────
+    function getMemberColor(catName) {
+      const key = catName.toLowerCase();
+      for (let i = 0; i < family.members.length; i++) {
+        if (key.includes(family.members[i].name.toLowerCase())) {
+          return family.members[i].color;
+        }
+      }
+      return null;
+    }
+
+    function getCatColor(cat, index) {
+      const mc = getMemberColor(cat);
+      if (mc) return mc;
+      return catColors[index % catColors.length];
+    }
+
+    function renderList(categories, intl, destination) {
+      editMode = false;
+      document.getElementById('editModeBtn').textContent = 'Edit List';
+      document.getElementById('editModeBtn').classList.remove('active');
+
+      const container = document.getElementById('packingList');
+      container.innerHTML = '';
+      container.classList.remove('edit-on');
+
+      document.getElementById('intlBadge').innerHTML = intl
+        ? `<div class="intl-badge">International trip to ${destination} — extra items included</div>` : '';
+
+      Object.entries(categories).forEach(([cat, items], index) => {
+        const color = getCatColor(cat, index);
+        const div = document.createElement('div');
+        div.className = 'category';
+        div.dataset.cat = cat;
+        div.dataset.color = color;
+
+        const header = document.createElement('div');
+        header.className = `cat-header cat-${color}`;
+        header.textContent = cat;
+        div.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = `cat-body cat-${color}-bg`;
+        items.forEach(item => body.appendChild(createItemRow(item, color)));
+
+        const addRow = document.createElement('div');
+        addRow.className = 'add-item-row';
+        addRow.innerHTML = `
+          <input type="text" class="add-item-input" placeholder="Add an item..." onkeydown="if(event.key==='Enter') addItem(this,'${color}')">
+          <button class="btn-add cat-${color}-add" onclick="addItem(this.previousElementSibling,'${color}')">+ Add</button>
+        `;
+        body.appendChild(addRow);
+        div.appendChild(body);
+        container.appendChild(div);
+      });
+
+      document.getElementById('listCard').style.display = 'block';
+      document.getElementById('dashboard').classList.add('visible');
+      updateProgress();
+      document.getElementById('listCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function createItemRow(text, color) {
+      const row = document.createElement('div');
+      row.className = 'item';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.onchange = function() { updateProgress(this); };
+
+      const labelEl = document.createElement('span');
+      labelEl.className = 'item-label';
+      labelEl.textContent = text;
+
+      const editInput = document.createElement('input');
+      editInput.type = 'text';
+      editInput.className = 'item-input';
+      editInput.value = text;
+      editInput.onkeydown = function(e) { if (e.key === 'Enter') saveEdit(row); };
+
+      const controls = document.createElement('div');
+      controls.className = 'item-edit-controls';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn-edit';
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => startEdit(row, editInput);
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'btn-save';
+      saveBtn.textContent = 'Save';
+      saveBtn.style.display = 'none';
+      saveBtn.onclick = () => saveEdit(row);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-delete';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.onclick = () => { row.remove(); updateProgress(); };
+
+      controls.appendChild(editBtn);
+      controls.appendChild(saveBtn);
+      controls.appendChild(deleteBtn);
+
+      row.appendChild(checkbox);
+      row.appendChild(labelEl);
+      row.appendChild(editInput);
+      row.appendChild(controls);
+      return row;
+    }
+
+    function startEdit(row, input) {
+      row.classList.add('editing');
+      input.focus(); input.select();
+      row.querySelector('.btn-edit').style.display = 'none';
+      row.querySelector('.btn-save').style.display = 'inline-block';
+    }
+
+    function saveEdit(row) {
+      const input = row.querySelector('.item-input');
+      const label = row.querySelector('.item-label');
+      if (input.value.trim()) label.textContent = input.value.trim();
+      row.classList.remove('editing');
+      row.querySelector('.btn-edit').style.display = 'inline-block';
+      row.querySelector('.btn-save').style.display = 'none';
+    }
+
+    function addItem(input, color) {
+      const text = input.value.trim();
+      if (!text) return;
+      const body = input.closest('.cat-body');
+      const addRow = input.closest('.add-item-row');
+      body.insertBefore(createItemRow(text, color), addRow);
+      input.value = '';
+      updateProgress();
+    }
+
+    function toggleEditMode() {
+      editMode = !editMode;
+      const btn = document.getElementById('editModeBtn');
+      const list = document.getElementById('packingList');
+      if (editMode) {
+        list.classList.add('edit-on');
+        btn.textContent = 'Done Editing';
+        btn.classList.add('active');
+      } else {
+        document.querySelectorAll('.item.editing').forEach(item => saveEdit(item));
+        list.classList.remove('edit-on');
+        btn.textContent = 'Edit List';
+        btn.classList.remove('active');
+      }
+    }
+
+    // ── PROGRESS ───────────────────────────────────────────
+    function getMemberPct(name) {
+      const key = name.toLowerCase();
+      const cats = [...document.querySelectorAll('.category')].filter(d => d.dataset.cat.toLowerCase().includes(key));
+      const all = cats.flatMap(d => [...d.querySelectorAll('input[type="checkbox"]')]);
+      const checked = all.filter(c => c.checked);
+      if (!all.length) return 0;
+      return Math.round((checked.length / all.length) * 100);
+    }
+
+    function updateProgress(checkbox) {
+      if (checkbox) checkbox.parentElement.classList.toggle('checked', checkbox.checked);
+
+      const all = [...document.querySelectorAll('#packingList input[type="checkbox"]')];
+      const checked = all.filter(c => c.checked);
+      const pct = all.length ? Math.round((checked.length / all.length) * 100) : 0;
+      document.getElementById('dashPct').textContent = pct + '%';
+      document.getElementById('dashBar').style.width = pct + '%';
+
+      family.members.forEach(m => {
+        const slug = m.name.toLowerCase().replace(/\s/g,'-');
+        const p = getMemberPct(m.name);
+        const pctEl = document.getElementById(`pct-${slug}`);
+        const barEl = document.getElementById(`bar-${slug}`);
+        if (pctEl) pctEl.textContent = p + '%';
+        if (barEl) barEl.style.width = p + '%';
+      });
+
+      const catsEl = document.getElementById('dashCats');
+      catsEl.innerHTML = '';
+      document.querySelectorAll('.category').forEach(catDiv => {
+        const catAll = [...catDiv.querySelectorAll('input[type="checkbox"]')];
+        const catChecked = catAll.filter(c => c.checked);
+        const catPct = catAll.length ? Math.round((catChecked.length / catAll.length) * 100) : 0;
+        const isDone = catPct === 100;
+        const label = catDiv.dataset.cat.split(' ').slice(0, 2).join(' ');
+        const tag = document.createElement('div');
+        tag.className = 'dash-cat' + (isDone ? ' done' : '');
+        tag.textContent = isDone ? `${label} ✓` : `${label} ${catPct}%`;
+        catsEl.appendChild(tag);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
