@@ -315,11 +315,9 @@
       <div class="card" id="tripCard">
         <h2 style="color: var(--pink)">Trip Details</h2>
         <label>Destination</label>
-        <input type="text" id="destination" placeholder="e.g. Cabo, Paris, Miami Beach">
-        <label>Domestic or International?</label>
-        <div class="toggle-group">
-          <button class="toggle-btn active" data-color="pink" onclick="selectOne(this,'intl')" data-val="domestic">Domestic</button>
-          <button class="toggle-btn" data-color="teal" onclick="selectOne(this,'intl')" data-val="international">International</button>
+        <input type="text" id="destination" placeholder="e.g. Cabo, Paris, Miami Beach" oninput="updateIntlBadge()">
+        <div id="intlDetectWrap" style="display:none; margin-top:-10px; margin-bottom:16px;">
+          <span id="intlDetectBadge" style="display:inline-block; border-radius:12px; padding:5px 14px; font-size:13px; font-weight:700;"></span>
         </div>
         <label>Trip Type</label>
         <div class="toggle-group">
@@ -533,7 +531,7 @@
       const nights = parseInt(document.getElementById('nights').value) || 3;
       const tripType = getVal('triptype');
       const accom = getVal('accom');
-      const intl = getVal('intl') === 'international';
+      const intl = detectInternational(document.getElementById('destination').value);
       const destination = document.getElementById('destination').value || 'your destination';
       const categories = {};
 
@@ -850,6 +848,55 @@
         tag.textContent = isDone ? `${label} ✓` : `${label} ${catPct}%`;
         catsEl.appendChild(tag);
       });
+    }
+
+    const US_PLACES = new Set([
+      'alabama','alaska','arizona','arkansas','california','colorado','connecticut',
+      'delaware','florida','georgia','hawaii','idaho','illinois','indiana','iowa',
+      'kansas','kentucky','louisiana','maine','maryland','massachusetts','michigan',
+      'minnesota','mississippi','missouri','montana','nebraska','nevada',
+      'new hampshire','new jersey','new mexico','new york','north carolina',
+      'north dakota','ohio','oklahoma','oregon','pennsylvania','rhode island',
+      'south carolina','south dakota','tennessee','texas','utah','vermont',
+      'virginia','washington','west virginia','wisconsin','wyoming',
+      'district of columbia','washington dc','washington d.c.',
+      'puerto rico','us virgin islands','guam','american samoa','northern mariana islands',
+      'al','ak','az','ar','ca','co','ct','de','fl','ga','hi','id','il','in','ia',
+      'ks','ky','la','me','md','ma','mi','mn','ms','mo','mt','ne','nv','nh','nj',
+      'nm','ny','nc','nd','oh','ok','or','pa','ri','sc','sd','tn','tx','ut','vt',
+      'va','wa','wv','wi','wy','dc',
+      'usa','us','united states','america'
+    ]);
+
+    function detectInternational(destination) {
+      if (!destination.trim()) return false;
+      const lower = destination.toLowerCase();
+      for (const place of US_PLACES) {
+        if (place.includes(' ') && lower.includes(place)) return false;
+      }
+      const words = lower.split(/[\s,./]+/);
+      for (const word of words) {
+        if (US_PLACES.has(word)) return false;
+      }
+      return true;
+    }
+
+    function updateIntlBadge() {
+      const dest = document.getElementById('destination').value.trim();
+      const wrap = document.getElementById('intlDetectWrap');
+      const badge = document.getElementById('intlDetectBadge');
+      if (!dest) { wrap.style.display = 'none'; return; }
+      const isIntl = detectInternational(dest);
+      wrap.style.display = 'block';
+      if (isIntl) {
+        badge.textContent = 'International trip detected';
+        badge.style.background = '#f5f0ff'; badge.style.color = 'var(--purple)';
+        badge.style.border = '2px solid var(--purple)';
+      } else {
+        badge.textContent = 'Domestic trip detected';
+        badge.style.background = '#f0faf9'; badge.style.color = 'var(--teal)';
+        badge.style.border = '2px solid var(--teal)';
+      }
     }
 
     init();
