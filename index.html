@@ -954,6 +954,7 @@
     }
 
     const US_PLACES = new Set([
+      // states
       'alabama','alaska','arizona','arkansas','california','colorado','connecticut',
       'delaware','florida','georgia','hawaii','idaho','illinois','indiana','iowa',
       'kansas','kentucky','louisiana','maine','maryland','massachusetts','michigan',
@@ -963,12 +964,49 @@
       'south carolina','south dakota','tennessee','texas','utah','vermont',
       'virginia','washington','west virginia','wisconsin','wyoming',
       'district of columbia','washington dc','washington d.c.',
+      // territories
       'puerto rico','us virgin islands','guam','american samoa','northern mariana islands',
+      // state abbreviations
       'al','ak','az','ar','ca','co','ct','de','fl','ga','hi','id','il','in','ia',
       'ks','ky','la','me','md','ma','mi','mn','ms','mo','mt','ne','nv','nh','nj',
       'nm','ny','nc','nd','oh','ok','or','pa','ri','sc','sd','tn','tx','ut','vt',
       'va','wa','wv','wi','wy','dc',
-      'usa','us','united states','america'
+      // general
+      'usa','us','united states','america',
+      // florida
+      'miami','miami beach','south beach','orlando','tampa','fort lauderdale','key west',
+      'naples','sarasota','clearwater','boca raton','palm beach','west palm beach',
+      'fort myers','daytona beach','pensacola','panama city beach','st augustine',
+      'saint augustine','gainesville','jacksonville','destin',
+      // nevada / west
+      'las vegas','reno','lake tahoe',
+      // new york
+      'new york city','nyc','manhattan','brooklyn','long island','hamptons',
+      // california
+      'los angeles','san francisco','san diego','anaheim','palm springs',
+      'santa barbara','napa','santa monica','malibu','beverly hills',
+      // midwest / south
+      'chicago','nashville','memphis','new orleans','kansas city','st louis',
+      'saint louis','minneapolis','columbus','cleveland','cincinnati','indianapolis',
+      'milwaukee','detroit','baltimore','louisville',
+      // texas
+      'austin','houston','dallas','san antonio','galveston','fort worth',
+      // georgia / carolinas
+      'atlanta','savannah','myrtle beach','charleston','hilton head','asheville',
+      'charlotte','raleigh',
+      // northeast
+      'boston','philadelphia','pittsburgh','providence','hartford',
+      // pacific northwest
+      'seattle','portland',
+      // arizona
+      'phoenix','scottsdale','sedona','tucson',
+      // colorado / mountain west
+      'denver','aspen','vail','breckenridge','boulder','telluride','colorado springs',
+      'jackson hole','park city','salt lake city','santa fe','albuquerque',
+      // hawaii
+      'honolulu','maui','kauai','oahu','waikiki','lahaina',
+      // virginia / mid-atlantic
+      'virginia beach','outer banks','ocean city',
     ]);
 
     function detectInternational(destination) {
