@@ -504,7 +504,8 @@
       if (style === 'full')  return nights + 2;
       return nights + 1;
     }
-    function swimsuits(nights, style) {
+    function swimsuits(nights, style, isBeach) {
+      if (!isBeach) return style === 'full' ? 2 : 1;
       if (style === 'light') return Math.ceil(nights / 2);
       if (style === 'full')  return nights + 1;
       return nights;
@@ -531,6 +532,7 @@
       const nights = parseInt(document.getElementById('nights').value) || 3;
       const tripType = getVal('triptype');
       const accom = getVal('accom');
+      const isBeach = tripType === 'beach' || accom === 'allinclusive';
       const intl = detectInternational(document.getElementById('destination').value);
       const destination = document.getElementById('destination').value || 'your destination';
       const categories = {};
@@ -550,7 +552,7 @@
         if (isAdult && isFemale) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}${style === 'light' ? ' (mix & match pieces)' : ''}`,
-            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
             ...(style !== 'light' ? [`Cover-ups: ${Math.ceil(nights/2)} (for lunches)`] : ['1 cover-up (doubles for lunch & beach)']),
             ...(style === 'light' ? [] : [`Workout clothes: ${nights} sets`]),
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) + ' (re-wear encouraged)' : nights}`,
@@ -561,7 +563,7 @@
         } else if (isAdult && isMale) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}${style === 'light' ? ' (mix & match)' : ''}`,
-            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
             `Cover-ups / shirts for lunch: ${style === 'light' ? 1 : Math.ceil(nights/2)}`,
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
             `Pajamas: ${pajamas(nights, style)}`,
@@ -571,7 +573,7 @@
         } else if (isAdult) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}`,
-            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
             `Pajamas: ${pajamas(nights, style)}`,
             `Underwear & socks: ${outfits(nights, style) + 1} pairs`,
@@ -580,7 +582,7 @@
         } else if (isKid) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}`,
-            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
             `Cover-up for lunch: ${style === 'light' ? 1 : Math.ceil(nights/2)}`,
             ...(style !== 'light' ? [`Play clothes: ${nights} sets`] : ['Play clothes: 2 sets (re-wear)']),
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
@@ -592,7 +594,7 @@
         } else if (isToddler) {
           clothing.push(
             `Outfits: ${outfits(nights, style) + 1} (extras for spills)`,
-            `Swimsuits: ${swimsuits(nights, style)}`,
+            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
             `Pajamas: ${pajamas(nights, style)}`,
             `Underwear & socks: ${outfits(nights, style) + 2} pairs`,
             'Water shoes / sandals',
