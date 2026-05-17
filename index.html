@@ -261,6 +261,31 @@
     .cat-blue-add { background: var(--blue); } .cat-green-add { background: var(--green); }
     .cat-yellow-add { background: #f5c300; }
 
+    /* TRIP LEGS */
+    .leg-row {
+      background: #fdf5fa; border-radius: 12px; padding: 14px;
+      margin-bottom: 12px; border: 2px solid #f0e0ee;
+    }
+    .leg-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .leg-label { font-weight: 800; font-size: 14px; color: var(--pink); }
+    .btn-remove-leg {
+      background: #ffe0e0; color: var(--coral); border: none;
+      border-radius: 8px; width: 30px; height: 30px; font-size: 16px;
+      cursor: pointer; font-weight: 900; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; touch-action: manipulation;
+    }
+    .leg-nights-row { display: flex; align-items: center; gap: 10px; }
+    .leg-nights-row label { margin-bottom: 0; white-space: nowrap; }
+    .leg-nights-input { width: 80px !important; margin-bottom: 0 !important; }
+    .leg-intl-badge { display: inline-block; border-radius: 12px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .btn-add-leg {
+      background: #fff0f8; color: var(--pink); border: 2px dashed var(--pink);
+      border-radius: 10px; padding: 12px 16px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: 15px; cursor: pointer; width: 100%;
+      margin-bottom: 16px; transition: background 0.2s; touch-action: manipulation;
+    }
+    .btn-add-leg:hover { background: #fce8f4; }
+
     /* MOBILE SPECIFIC */
     @media (max-width: 480px) {
       .setup-card { padding: 20px; border-radius: 16px; }
@@ -314,27 +339,8 @@
 
       <div class="card" id="tripCard">
         <h2 style="color: var(--pink)">Trip Details</h2>
-        <label>Destination</label>
-        <input type="text" id="destination" placeholder="e.g. Cabo, Paris, Miami Beach" oninput="updateIntlBadge()">
-        <div id="intlDetectWrap" style="display:none; margin-top:-10px; margin-bottom:16px;">
-          <span id="intlDetectBadge" style="display:inline-block; border-radius:12px; padding:5px 14px; font-size:13px; font-weight:700;"></span>
-        </div>
-        <label>Trip Type</label>
-        <div class="toggle-group">
-          <button class="toggle-btn active" data-color="coral" onclick="selectOne(this,'triptype')" data-val="beach">Beach</button>
-          <button class="toggle-btn" data-color="blue" onclick="selectOne(this,'triptype')" data-val="cold">Cold Weather</button>
-          <button class="toggle-btn" data-color="purple" onclick="selectOne(this,'triptype')" data-val="city">City</button>
-          <button class="toggle-btn" data-color="green" onclick="selectOne(this,'triptype')" data-val="camping">Camping</button>
-        </div>
-        <label>Accommodation Type</label>
-        <div class="toggle-group">
-          <button class="toggle-btn active" data-color="pink" onclick="selectOne(this,'accom')" data-val="allinclusive">All-Inclusive</button>
-          <button class="toggle-btn" data-color="coral" onclick="selectOne(this,'accom')" data-val="hotel">Hotel</button>
-          <button class="toggle-btn" data-color="teal" onclick="selectOne(this,'accom')" data-val="airbnb">Airbnb / Rental</button>
-          <button class="toggle-btn" data-color="green" onclick="selectOne(this,'accom')" data-val="camping">Camping</button>
-        </div>
-        <label>Number of Nights</label>
-        <input type="number" id="nights" placeholder="e.g. 5" min="1">
+        <div id="legList"></div>
+        <button class="btn-add-leg" onclick="addLeg()">+ Add Another Destination</button>
         <button class="generate-btn" onclick="generateList()">Generate Packing List</button>
       </div>
 
@@ -446,6 +452,8 @@
       document.getElementById('dashboard').classList.remove('visible');
       document.getElementById('tripCard').style.display = 'block';
       document.getElementById('listCard').style.display = 'none';
+      document.getElementById('legList').innerHTML = '';
+      addLeg();
       document.getElementById('appTitle').textContent = `${family.familyName} Family Packing`;
       document.getElementById('appSubtitle').textContent = family.members.map(m =>
         m.age ? `${m.name} (${m.age})` : m.name
@@ -504,7 +512,7 @@
       if (style === 'full')  return nights + 2;
       return nights + 1;
     }
-    function swimsuits(nights, style, isBeach) {
+    function swimsuits(swimNights, style, isBeach) {
       if (!isBeach) return style === 'full' ? 2 : 1;
       if (style === 'light') return Math.ceil(nights / 2);
       if (style === 'full')  return nights + 1;
@@ -529,12 +537,21 @@
     }
 
     function generateList() {
-      const nights = parseInt(document.getElementById('nights').value) || 3;
-      const tripType = getVal('triptype');
-      const accom = getVal('accom');
-      const isBeach = tripType === 'beach' || accom === 'allinclusive';
-      const intl = detectInternational(document.getElementById('destination').value);
-      const destination = document.getElementById('destination').value || 'your destination';
+      const legRows = [...document.querySelectorAll('#legList .leg-row')];
+      const legs = legRows.map(row => ({
+        destination: row.querySelector('.leg-dest').value.trim(),
+        tripType: row.querySelector('.leg-triptype-group .toggle-btn.active')?.dataset.val || 'beach',
+        accom: row.querySelector('.leg-accom-group .toggle-btn.active')?.dataset.val || 'hotel',
+        nights: parseInt(row.querySelector('.leg-nights-input').value) || 0,
+      }));
+      const nights = Math.max(legs.reduce((sum, l) => sum + l.nights, 0), 1);
+      const beachNights = legs.filter(l => l.tripType === 'beach').reduce((sum, l) => sum + l.nights, 0);
+      const swimNights = beachNights || nights;
+      const intl = legs.some(l => detectInternational(l.destination));
+      const allTripTypes = [...new Set(legs.map(l => l.tripType))];
+      const allAccoms = [...new Set(legs.map(l => l.accom))];
+      const isBeach = allTripTypes.includes('beach') || allAccoms.includes('allinclusive');
+      const destination = legs.map(l => l.destination).filter(Boolean).join(' · ') || 'your destinations';
       const categories = {};
 
       family.members.forEach(m => {
@@ -552,7 +569,7 @@
         if (isAdult && isFemale) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}${style === 'light' ? ' (mix & match pieces)' : ''}`,
-            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
+            `Swimsuits: ${swimsuits(swimNights, style, isBeach)}`,
             ...(style !== 'light' ? [`Cover-ups: ${Math.ceil(nights/2)} (for lunches)`] : ['1 cover-up (doubles for lunch & beach)']),
             ...(style === 'light' ? [] : [`Workout clothes: ${nights} sets`]),
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) + ' (re-wear encouraged)' : nights}`,
@@ -563,7 +580,7 @@
         } else if (isAdult && isMale) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}${style === 'light' ? ' (mix & match)' : ''}`,
-            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
+            `Swimsuits: ${swimsuits(swimNights, style, isBeach)}`,
             `Cover-ups / shirts for lunch: ${style === 'light' ? 1 : Math.ceil(nights/2)}`,
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
             `Pajamas: ${pajamas(nights, style)}`,
@@ -573,7 +590,7 @@
         } else if (isAdult) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}`,
-            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
+            `Swimsuits: ${swimsuits(swimNights, style, isBeach)}`,
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
             `Pajamas: ${pajamas(nights, style)}`,
             `Underwear & socks: ${outfits(nights, style) + 1} pairs`,
@@ -582,7 +599,7 @@
         } else if (isKid) {
           clothing.push(
             `Outfits: ${outfits(nights, style)}`,
-            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
+            `Swimsuits: ${swimsuits(swimNights, style, isBeach)}`,
             `Cover-up for lunch: ${style === 'light' ? 1 : Math.ceil(nights/2)}`,
             ...(style !== 'light' ? [`Play clothes: ${nights} sets`] : ['Play clothes: 2 sets (re-wear)']),
             `Dinner outfits: ${style === 'light' ? Math.ceil(nights/2) : nights}`,
@@ -594,7 +611,7 @@
         } else if (isToddler) {
           clothing.push(
             `Outfits: ${outfits(nights, style) + 1} (extras for spills)`,
-            `Swimsuits: ${swimsuits(nights, style, isBeach)}`,
+            `Swimsuits: ${swimsuits(swimNights, style, isBeach)}`,
             `Pajamas: ${pajamas(nights, style)}`,
             `Underwear & socks: ${outfits(nights, style) + 2} pairs`,
             'Water shoes / sandals',
@@ -608,7 +625,7 @@
           );
         }
 
-        if (tripType === 'cold') clothing.push('Heavy coat', 'Gloves', isBaby ? 'Bunting / snowsuit' : 'Thermal underlayers');
+        if (allTripTypes.includes('cold')) clothing.push('Heavy coat', 'Gloves', isBaby ? 'Bunting / snowsuit' : 'Thermal underlayers');
         if (style === 'light') clothing.push('Laundry bags — plan to wash mid-trip if needed');
         categories[`${ageLabel(m)}'s Clothing`] = { items: clothing, packStyle: style };
       });
@@ -631,8 +648,8 @@
       const docs = [];
       family.members.forEach(m => { if (m.role === 'adult') docs.push(`ID / Passport — ${m.name}`); });
       docs.push('Credit cards & cash', 'Phone chargers (all devices)', 'Portable battery pack', 'Headphones', 'Sunglasses for everyone', 'Beach bag / tote', 'Reusable water bottles');
-      if (accom === 'allinclusive') docs.push('Resort confirmation & booking details', 'Room wristbands / key info');
-      if (accom === 'airbnb') docs.push('Airbnb check-in instructions & door code', 'Host contact info');
+      if (allAccoms.includes('allinclusive')) docs.push('Resort confirmation & booking details', 'Room wristbands / key info');
+      if (allAccoms.includes('airbnb')) docs.push('Airbnb check-in instructions & door code', 'Host contact info');
       if (family.members.some(m => m.packStyle === 'light')) docs.push('Check airline carry-on size limits if packing light');
       categories['Documents & Essentials'] = { items: docs };
 
@@ -653,7 +670,7 @@
         const ent = [];
         kids.forEach(m => { ent.push(`iPad / tablet for ${m.name} (download shows)`, `Headphones for ${m.name}`, `Favorite toy / stuffed animal (${m.name})`); });
         ent.push('Coloring books or activity pad', 'Snacks for travel day');
-        if (tripType === 'beach') ent.push('Sand toys', 'Floaties / swim vest');
+        if (allTripTypes.includes('beach')) ent.push('Sand toys', 'Floaties / swim vest');
         categories['Kids Entertainment'] = { items: ent };
       }
 
@@ -662,10 +679,10 @@
         categories['Baby & Toddler Gear'] = { items: ['Stroller', 'Car seat (if needed)', 'Baby monitor', 'Portable crib / pack n play', 'Changing pad', 'Baby food / snacks', 'Sippy cups / bottles', 'Bibs'] };
       }
 
-      if (tripType === 'beach') categories['Beach Extras'] = { items: ['Beach towels (check if resort provides)', 'Sunscreen — face sticks & body spray (everyone)', 'Snorkel gear', 'Waterproof phone case', 'Dry bag', 'Beach hats for everyone'] };
-      if (tripType === 'cold') categories['Cold Weather Extras'] = { items: ['Hand warmers', 'Ski passes / gear rentals info', 'Helmets (if skiing)', 'Goggles'] };
-      if (tripType === 'camping') categories['Camping Gear'] = { items: ['Tent & sleeping bags', 'Flashlights & lanterns', 'Bug spray', 'Camp chairs & table', 'Cooler & ice', 'Cooking supplies', 'Fire starters'] };
-      if (accom === 'airbnb') categories['Rental Extras'] = { items: ['Dish soap & sponge', 'Paper towels', 'Laundry detergent', 'Snacks & groceries on arrival', 'Trash bags'] };
+      if (allTripTypes.includes('beach')) categories['Beach Extras'] = { items: ['Beach towels (check if resort provides)', 'Sunscreen — face sticks & body spray (everyone)', 'Snorkel gear', 'Waterproof phone case', 'Dry bag', 'Beach hats for everyone'] };
+      if (allTripTypes.includes('cold')) categories['Cold Weather Extras'] = { items: ['Hand warmers', 'Ski passes / gear rentals info', 'Helmets (if skiing)', 'Goggles'] };
+      if (allTripTypes.includes('camping')) categories['Camping Gear'] = { items: ['Tent & sleeping bags', 'Flashlights & lanterns', 'Bug spray', 'Camp chairs & table', 'Cooler & ice', 'Cooking supplies', 'Fire starters'] };
+      if (allAccoms.includes('airbnb')) categories['Rental Extras'] = { items: ['Dish soap & sponge', 'Paper towels', 'Laundry detergent', 'Snacks & groceries on arrival', 'Trash bags'] };
 
       renderList(categories, intl, destination);
     }
@@ -850,6 +867,90 @@
         tag.textContent = isDone ? `${label} ✓` : `${label} ${catPct}%`;
         catsEl.appendChild(tag);
       });
+    }
+
+    function selectInGroup(btn) {
+      btn.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function addLeg(dest='', tripType='beach', accom='allinclusive', nightsVal='') {
+      const list = document.getElementById('legList');
+      const idx = list.children.length;
+      const div = document.createElement('div');
+      div.className = 'leg-row';
+      const ttOptions = [
+        {val:'beach',color:'coral',label:'Beach'},
+        {val:'cold',color:'blue',label:'Cold Weather'},
+        {val:'city',color:'purple',label:'City'},
+        {val:'camping',color:'green',label:'Camping'},
+      ];
+      const acOptions = [
+        {val:'allinclusive',color:'pink',label:'All-Inclusive'},
+        {val:'hotel',color:'coral',label:'Hotel'},
+        {val:'airbnb',color:'teal',label:'Airbnb / Rental'},
+        {val:'camping',color:'green',label:'Camping'},
+      ];
+      const ttBtns = ttOptions.map(t =>
+        `<button class="toggle-btn${t.val===tripType?' active':''}" data-color="${t.color}" data-val="${t.val}" onclick="selectInGroup(this)">${t.label}</button>`
+      ).join('');
+      const acBtns = acOptions.map(a =>
+        `<button class="toggle-btn${a.val===accom?' active':''}" data-color="${a.color}" data-val="${a.val}" onclick="selectInGroup(this)">${a.label}</button>`
+      ).join('');
+      div.innerHTML = `
+        <div class="leg-header">
+          <span class="leg-label">Destination ${idx + 1}</span>
+          <button class="btn-remove-leg" onclick="removeLeg(this)">×</button>
+        </div>
+        <input type="text" class="leg-dest" placeholder="e.g. Cabo, Paris, Miami Beach" value="${dest}" oninput="updateLegBadge(this)">
+        <div class="leg-intl-wrap" style="display:none; margin-top:-10px; margin-bottom:12px;">
+          <span class="leg-intl-badge"></span>
+        </div>
+        <label>Trip Type</label>
+        <div class="toggle-group leg-triptype-group">${ttBtns}</div>
+        <label>Accommodation</label>
+        <div class="toggle-group leg-accom-group">${acBtns}</div>
+        <div class="leg-nights-row">
+          <label>Nights</label>
+          <input type="number" class="leg-nights-input" placeholder="e.g. 5" min="1" value="${nightsVal}">
+        </div>
+      `;
+      list.appendChild(div);
+      updateLegNumbers();
+      updateRemoveButtons();
+      if (dest) updateLegBadge(div.querySelector('.leg-dest'));
+    }
+
+    function removeLeg(btn) {
+      btn.closest('.leg-row').remove();
+      updateLegNumbers();
+      updateRemoveButtons();
+    }
+
+    function updateLegNumbers() {
+      document.querySelectorAll('#legList .leg-label').forEach((el, i) => {
+        el.textContent = `Destination ${i + 1}`;
+      });
+    }
+
+    function updateRemoveButtons() {
+      const rows = document.querySelectorAll('#legList .leg-row');
+      rows.forEach(row => {
+        row.querySelector('.btn-remove-leg').style.display = rows.length > 1 ? 'flex' : 'none';
+      });
+    }
+
+    function updateLegBadge(input) {
+      const dest = input.value.trim();
+      const wrap = input.nextElementSibling;
+      const badge = wrap.querySelector('.leg-intl-badge');
+      if (!dest) { wrap.style.display = 'none'; return; }
+      const isIntl = detectInternational(dest);
+      wrap.style.display = 'block';
+      badge.textContent = isIntl ? 'International' : 'Domestic';
+      badge.style.background = isIntl ? '#f5f0ff' : '#f0faf9';
+      badge.style.color = isIntl ? 'var(--purple)' : 'var(--teal)';
+      badge.style.border = isIntl ? '2px solid var(--purple)' : '2px solid var(--teal)';
     }
 
     const US_PLACES = new Set([
