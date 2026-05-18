@@ -1139,15 +1139,18 @@
           items
         });
       });
-      const savedLists = JSON.parse(localStorage.getItem('savedPackingLists') || '[]');
-      savedLists.unshift({
-        id: Date.now(),
-        name: currentTripName || 'Packing List',
+      let savedLists = JSON.parse(localStorage.getItem('savedPackingLists') || '[]');
+      const name = currentTripName || 'Packing List';
+      const updated = {
+        id: savedLists.find(l => l.name === name)?.id || Date.now(),
+        name,
         savedAt: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}),
         intl: currentLegs.some(l => detectInternational(l.destination)),
         destination: currentLegs.map(l => l.destination).filter(Boolean).join(' · '),
         categories
-      });
+      };
+      savedLists = savedLists.filter(l => l.name !== name);
+      savedLists.unshift(updated);
       localStorage.setItem('savedPackingLists', JSON.stringify(savedLists));
       const btn = document.getElementById('saveListBtn');
       btn.textContent = 'Saved!';
