@@ -514,9 +514,9 @@
     }
     function swimsuits(swimNights, style, isBeach) {
       if (!isBeach) return style === 'full' ? 2 : 1;
-      if (style === 'light') return Math.ceil(nights / 2);
-      if (style === 'full')  return nights + 1;
-      return nights;
+      if (style === 'light') return Math.ceil(swimNights / 2);
+      if (style === 'full')  return swimNights + 1;
+      return swimNights;
     }
     function pajamas(nights, style) {
       if (style === 'light') return 1;
