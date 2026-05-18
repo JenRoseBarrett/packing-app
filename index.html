@@ -274,9 +274,22 @@
       cursor: pointer; font-weight: 900; display: flex; align-items: center;
       justify-content: center; flex-shrink: 0; touch-action: manipulation;
     }
-    .leg-nights-row { display: flex; align-items: center; gap: 10px; }
-    .leg-nights-row label { margin-bottom: 0; white-space: nowrap; }
-    .leg-nights-input { width: 80px !important; margin-bottom: 0 !important; }
+    .leg-dates-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-top: 4px; }
+    .leg-date-group { display: flex; flex-direction: column; flex: 1; min-width: 120px; }
+    .leg-date-group label { margin-bottom: 6px; }
+    input[type="date"] {
+      width: 100%; padding: 9px 12px; border: 2px solid #f0e0ee;
+      border-radius: 12px; font-size: 15px; font-family: 'Nunito', sans-serif;
+      font-weight: 600; outline: none; color: #333; transition: border-color 0.2s; margin-bottom: 0;
+    }
+    input[type="date"]:focus { border-color: var(--pink); }
+    input[type="date"].input-error { border-color: var(--coral) !important; }
+    .leg-nights-badge {
+      display: none; padding: 7px 12px; background: #f0faf9; color: var(--teal);
+      border: 2px solid var(--teal); border-radius: 10px; font-weight: 800;
+      font-size: 13px; white-space: nowrap; margin-bottom: 16px;
+    }
+    .leg-nights-badge.visible { display: block; }
     .leg-intl-badge { display: inline-block; border-radius: 12px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
     .btn-add-leg {
       background: #fff0f8; color: var(--pink); border: 2px dashed var(--pink);
@@ -545,6 +558,34 @@
       return null;
     }
 
+    function updateLegNights(input) {
+      const row = input.closest('.leg-row');
+      row.classList.remove('row-error');
+      row.querySelectorAll('.leg-start-date, .leg-end-date').forEach(i => i.classList.remove('input-error'));
+      document.getElementById('tripError').classList.remove('visible');
+      const start = row.querySelector('.leg-start-date').value;
+      const end = row.querySelector('.leg-end-date').value;
+      const badge = row.querySelector('.leg-nights-badge');
+      if (start && end) {
+        const n = Math.round((new Date(end) - new Date(start)) / (1000*60*60*24));
+        if (n > 0) {
+          badge.textContent = `${n} night${n === 1 ? '' : 's'}`;
+          badge.classList.add('visible');
+        } else {
+          badge.textContent = 'Return must be after departure';
+          badge.style.color = 'var(--coral)';
+          badge.style.borderColor = 'var(--coral)';
+          badge.style.background = '#fff0f0';
+          badge.classList.add('visible');
+        }
+      } else {
+        badge.classList.remove('visible');
+      }
+      if (start) {
+        row.querySelector('.leg-end-date').min = start;
+      }
+    }
+
     function clearLegError(input) {
       input.classList.remove('input-error');
       input.closest('.leg-row').classList.remove('row-error');
@@ -556,7 +597,7 @@
       // clear previous errors
       legRows.forEach(r => {
         r.classList.remove('row-error');
-        r.querySelector('.leg-nights-input').classList.remove('input-error');
+        r.querySelectorAll('.leg-dest, .leg-start-date, .leg-end-date').forEach(i => i.classList.remove('input-error'));
       });
       const errorEl = document.getElementById('tripError');
       errorEl.classList.remove('visible');
@@ -567,22 +608,30 @@
         return;
       }
       const missingDest = legRows.filter(r => !r.querySelector('.leg-dest').value.trim());
-      const missingNights = legRows.filter(r => {
-        const val = parseInt(r.querySelector('.leg-nights-input').value);
-        return !val || val < 1;
+      const missingDates = legRows.filter(r => {
+        const s = r.querySelector('.leg-start-date').value;
+        const e = r.querySelector('.leg-end-date').value;
+        return !s || !e || Math.round((new Date(e) - new Date(s)) / (1000*60*60*24)) <= 0;
       });
       missingDest.forEach(r => {
         r.classList.add('row-error');
         r.querySelector('.leg-dest').classList.add('input-error');
       });
-      missingNights.forEach(r => {
+      missingDates.forEach(r => {
         r.classList.add('row-error');
-        r.querySelector('.leg-nights-input').classList.add('input-error');
+        const s = r.querySelector('.leg-start-date').value;
+        const e = r.querySelector('.leg-end-date').value;
+        if (!s) r.querySelector('.leg-start-date').classList.add('input-error');
+        if (!e) r.querySelector('.leg-end-date').classList.add('input-error');
+        if (s && e) {
+          r.querySelector('.leg-start-date').classList.add('input-error');
+          r.querySelector('.leg-end-date').classList.add('input-error');
+        }
       });
-      if (missingDest.length || missingNights.length) {
+      if (missingDest.length || missingDates.length) {
         const msgs = [];
         if (missingDest.length) msgs.push('destination');
-        if (missingNights.length) msgs.push('number of nights');
+        if (missingDates.length) msgs.push('travel dates');
         errorEl.textContent = `Please fill in the ${msgs.join(' and ')} for all highlighted trips.`;
         errorEl.classList.add('visible');
         return;
@@ -591,7 +640,11 @@
         destination: row.querySelector('.leg-dest').value.trim(),
         tripType: row.querySelector('.leg-triptype-group .toggle-btn.active')?.dataset.val || 'beach',
         accom: row.querySelector('.leg-accom-group .toggle-btn.active')?.dataset.val || 'hotel',
-        nights: parseInt(row.querySelector('.leg-nights-input').value) || 0,
+        nights: (() => {
+          const s = row.querySelector('.leg-start-date').value;
+          const e = row.querySelector('.leg-end-date').value;
+          return s && e ? Math.max(Math.round((new Date(e) - new Date(s)) / (1000*60*60*24)), 0) : 0;
+        })(),
       }));
       const nights = Math.max(legs.reduce((sum, l) => sum + l.nights, 0), 1);
       const beachNights = legs.filter(l => l.tripType === 'beach').reduce((sum, l) => sum + l.nights, 0);
@@ -959,9 +1012,17 @@
         <div class="toggle-group leg-triptype-group">${ttBtns}</div>
         <label>Accommodation</label>
         <div class="toggle-group leg-accom-group">${acBtns}</div>
-        <div class="leg-nights-row">
-          <label>Nights</label>
-          <input type="number" class="leg-nights-input" placeholder="e.g. 5" min="1" value="${nightsVal}" oninput="clearLegError(this)">
+        <label>Travel Dates</label>
+        <div class="leg-dates-row">
+          <div class="leg-date-group">
+            <label>Departure</label>
+            <input type="date" class="leg-start-date" oninput="updateLegNights(this)">
+          </div>
+          <div class="leg-date-group">
+            <label>Return</label>
+            <input type="date" class="leg-end-date" oninput="updateLegNights(this)">
+          </div>
+          <div class="leg-nights-badge"></div>
         </div>
       `;
       list.appendChild(div);
