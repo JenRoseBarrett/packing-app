@@ -307,6 +307,36 @@
     }
     .trip-error.visible { display: block; }
 
+    /* SAVED LISTS */
+    .saved-lists-header { font-size: 15px; font-weight: 800; color: var(--teal); margin-bottom: 10px; }
+    .saved-list-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 14px; background: #f0faf9; border-radius: 10px;
+      margin-bottom: 8px; border: 2px solid #d0f0ec;
+    }
+    .saved-list-name { font-weight: 800; font-size: 14px; color: #333; }
+    .saved-list-meta { font-size: 12px; color: #aaa; font-weight: 600; margin-top: 2px; }
+    .saved-list-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-load-list {
+      background: var(--teal); color: white; border: none; border-radius: 8px;
+      padding: 6px 12px; font-size: 12px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; cursor: pointer; touch-action: manipulation;
+    }
+    .btn-delete-list {
+      background: #ffe0e0; color: var(--coral); border: none; border-radius: 8px;
+      padding: 6px 10px; font-size: 12px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; cursor: pointer; touch-action: manipulation;
+    }
+    .save-list-btn {
+      border: 2px solid white; color: white; border-radius: 20px;
+      padding: 4px 10px; font-family: 'Nunito', sans-serif;
+      font-weight: 800; font-size: clamp(10px, 2.5vw, 12px);
+      cursor: pointer; background: rgba(255,255,255,0.2); white-space: nowrap;
+      transition: all 0.2s; touch-action: manipulation;
+    }
+    .save-list-btn:hover { background: rgba(255,255,255,0.35); }
+    .save-list-btn.saved { background: white; color: var(--teal); }
+
     /* MOBILE SPECIFIC */
     @media (max-width: 480px) {
       .setup-card { padding: 20px; border-radius: 16px; }
@@ -342,6 +372,7 @@
         <div class="dash-title" id="dashTitle">Packing Progress</div>
         <div class="dash-right">
           <button class="update-trip-btn" onclick="updateTrip()">Update Trip</button>
+          <button class="save-list-btn" id="saveListBtn" onclick="saveCurrentList()">Save List</button>
           <button class="reset-btn" onclick="resetFamily()">Change Family</button>
           <button class="edit-mode-btn" id="editModeBtn" onclick="toggleEditMode()">Edit List</button>
           <div class="dash-pct" id="dashPct">0%</div>
@@ -360,6 +391,11 @@
 
       <div class="card" id="tripCard">
         <h2 style="color: var(--pink)">Trip Details</h2>
+        <div id="savedListsSection" style="display:none; margin-bottom:20px;">
+          <div class="saved-lists-header">My Saved Lists</div>
+          <div id="savedListsContainer"></div>
+          <hr style="border:none; border-top:2px solid #f0e0ee; margin-bottom:20px;">
+        </div>
         <div id="legList"></div>
         <button class="btn-add-leg" onclick="addLeg()">+ Add Another Destination</button>
         <div id="tripError" class="trip-error"></div>
@@ -379,6 +415,8 @@
     const memberColors = ['pink','teal','yellow','purple','coral','blue','green'];
     let family = null;
     let editMode = false;
+    let currentLegs = [];
+    let currentTripName = '';
 
     function init() {
       const saved = localStorage.getItem('familyPackingData');
@@ -476,6 +514,7 @@
       document.getElementById('listCard').style.display = 'none';
       document.getElementById('legList').innerHTML = '';
       addLeg();
+      loadSavedLists();
       document.getElementById('appTitle').textContent = `${family.familyName} Family Packing`;
       document.getElementById('appSubtitle').textContent = family.members.map(m =>
         m.age ? `${m.name} (${m.age})` : m.name
@@ -514,6 +553,7 @@
       document.getElementById('listCard').style.display = 'none';
       document.getElementById('dashboard').classList.remove('visible');
       document.getElementById('tripCard').style.display = 'block';
+      loadSavedLists();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -640,6 +680,8 @@
         destination: row.querySelector('.leg-dest').value.trim(),
         tripType: row.querySelector('.leg-triptype-group .toggle-btn.active')?.dataset.val || 'beach',
         accom: row.querySelector('.leg-accom-group .toggle-btn.active')?.dataset.val || 'hotel',
+        startDate: row.querySelector('.leg-start-date').value,
+        endDate: row.querySelector('.leg-end-date').value,
         nights: (() => {
           const s = row.querySelector('.leg-start-date').value;
           const e = row.querySelector('.leg-end-date').value;
@@ -786,6 +828,8 @@
       if (allTripTypes.includes('camping')) categories['Camping Gear'] = { items: ['Tent & sleeping bags', 'Flashlights & lanterns', 'Bug spray', 'Camp chairs & table', 'Cooler & ice', 'Cooking supplies', 'Fire starters'] };
       if (allAccoms.includes('airbnb')) categories['Rental Extras'] = { items: ['Dish soap & sponge', 'Paper towels', 'Laundry detergent', 'Snacks & groceries on arrival', 'Trash bags'] };
 
+      currentLegs = legs;
+      currentTripName = generateTripName(legs);
       renderList(categories, intl, destination);
     }
 
@@ -823,6 +867,7 @@
         const div = document.createElement('div');
         div.className = 'category';
         div.dataset.cat = cat;
+        div.dataset.packstyle = packStyle || '';
 
         const header = document.createElement('div');
         header.className = `cat-header cat-${color}`;
@@ -1064,6 +1109,108 @@
       badge.style.background = isIntl ? '#f5f0ff' : '#f0faf9';
       badge.style.color = isIntl ? 'var(--purple)' : 'var(--teal)';
       badge.style.border = isIntl ? '2px solid var(--purple)' : '2px solid var(--teal)';
+    }
+
+    function generateTripName(legs) {
+      const dests = legs.map(l => l.destination).filter(Boolean).join(' · ') || 'Trip';
+      const allDates = legs.flatMap(l => [l.startDate, l.endDate]).filter(Boolean).sort();
+      if (!allDates.length) return dests;
+      const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'});
+      const year = new Date(allDates[allDates.length-1] + 'T12:00:00').getFullYear();
+      const dateRange = allDates.length >= 2
+        ? `${fmt(allDates[0])} – ${fmt(allDates[allDates.length-1])}, ${year}`
+        : `${fmt(allDates[0])}, ${year}`;
+      return `${dests} — ${dateRange}`;
+    }
+
+    function saveCurrentList() {
+      const categories = [];
+      document.querySelectorAll('#packingList .category').forEach(catDiv => {
+        const items = [];
+        catDiv.querySelectorAll('.item').forEach(item => {
+          items.push({
+            text: item.querySelector('.item-label').textContent,
+            checked: item.querySelector('input[type="checkbox"]').checked
+          });
+        });
+        categories.push({
+          name: catDiv.dataset.cat,
+          packStyle: catDiv.dataset.packstyle || null,
+          items
+        });
+      });
+      const savedLists = JSON.parse(localStorage.getItem('savedPackingLists') || '[]');
+      savedLists.unshift({
+        id: Date.now(),
+        name: currentTripName || 'Packing List',
+        savedAt: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}),
+        intl: currentLegs.some(l => detectInternational(l.destination)),
+        destination: currentLegs.map(l => l.destination).filter(Boolean).join(' · '),
+        categories
+      });
+      localStorage.setItem('savedPackingLists', JSON.stringify(savedLists));
+      const btn = document.getElementById('saveListBtn');
+      btn.textContent = 'Saved!';
+      btn.classList.add('saved');
+      setTimeout(() => { btn.textContent = 'Save List'; btn.classList.remove('saved'); }, 2000);
+    }
+
+    function loadSavedLists() {
+      const savedLists = JSON.parse(localStorage.getItem('savedPackingLists') || '[]');
+      const section = document.getElementById('savedListsSection');
+      const container = document.getElementById('savedListsContainer');
+      if (!savedLists.length) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      container.innerHTML = '';
+      savedLists.forEach(list => {
+        const div = document.createElement('div');
+        div.className = 'saved-list-item';
+        div.innerHTML = `
+          <div>
+            <div class="saved-list-name">${list.name}</div>
+            <div class="saved-list-meta">Saved ${list.savedAt}</div>
+          </div>
+          <div class="saved-list-actions">
+            <button class="btn-load-list" onclick="loadList(${list.id})">Load</button>
+            <button class="btn-delete-list" onclick="deleteList(${list.id})">Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function loadList(id) {
+      const savedLists = JSON.parse(localStorage.getItem('savedPackingLists') || '[]');
+      const saved = savedLists.find(l => l.id === id);
+      if (!saved) return;
+      const categories = {};
+      saved.categories.forEach(cat => {
+        categories[cat.name] = { items: cat.items.map(i => i.text), packStyle: cat.packStyle };
+      });
+      currentTripName = saved.name;
+      currentLegs = [];
+      renderList(categories, saved.intl, saved.destination || 'your destinations');
+      saved.categories.forEach(cat => {
+        const catDiv = [...document.querySelectorAll('.category')].find(d => d.dataset.cat === cat.name);
+        if (!catDiv) return;
+        const itemEls = catDiv.querySelectorAll('.item');
+        cat.items.forEach((item, i) => {
+          if (item.checked && itemEls[i]) {
+            const cb = itemEls[i].querySelector('input[type="checkbox"]');
+            cb.checked = true;
+            itemEls[i].classList.add('checked');
+          }
+        });
+      });
+      updateProgress();
+    }
+
+    function deleteList(id) {
+      if (!confirm('Delete this saved list?')) return;
+      let savedLists = JSON.parse(localStorage.getItem('savedPackingLists') || '[]');
+      savedLists = savedLists.filter(l => l.id !== id);
+      localStorage.setItem('savedPackingLists', JSON.stringify(savedLists));
+      loadSavedLists();
     }
 
     const US_PLACES = new Set([
