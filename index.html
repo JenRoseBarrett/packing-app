@@ -285,6 +285,14 @@
       margin-bottom: 16px; transition: background 0.2s; touch-action: manipulation;
     }
     .btn-add-leg:hover { background: #fce8f4; }
+    .leg-nights-input.input-error { border-color: var(--coral) !important; }
+    .leg-row.row-error { border-color: var(--coral); }
+    .trip-error {
+      display: none; margin-bottom: 12px; padding: 10px 14px;
+      background: #fff0f0; border: 2px solid var(--coral); border-radius: 10px;
+      color: var(--coral); font-size: 14px; font-weight: 700;
+    }
+    .trip-error.visible { display: block; }
 
     /* MOBILE SPECIFIC */
     @media (max-width: 480px) {
@@ -341,6 +349,7 @@
         <h2 style="color: var(--pink)">Trip Details</h2>
         <div id="legList"></div>
         <button class="btn-add-leg" onclick="addLeg()">+ Add Another Destination</button>
+        <div id="tripError" class="trip-error"></div>
         <button class="generate-btn" onclick="generateList()">Generate Packing List</button>
       </div>
 
@@ -536,8 +545,42 @@
       return null;
     }
 
+    function clearLegError(input) {
+      input.classList.remove('input-error');
+      input.closest('.leg-row').classList.remove('row-error');
+      document.getElementById('tripError').classList.remove('visible');
+    }
+
     function generateList() {
       const legRows = [...document.querySelectorAll('#legList .leg-row')];
+      // clear previous errors
+      legRows.forEach(r => {
+        r.classList.remove('row-error');
+        r.querySelector('.leg-nights-input').classList.remove('input-error');
+      });
+      const errorEl = document.getElementById('tripError');
+      errorEl.classList.remove('visible');
+      // validate
+      if (!legRows.length) {
+        errorEl.textContent = 'Please add at least one destination.';
+        errorEl.classList.add('visible');
+        return;
+      }
+      const missingNights = legRows.filter(r => {
+        const val = parseInt(r.querySelector('.leg-nights-input').value);
+        return !val || val < 1;
+      });
+      if (missingNights.length) {
+        missingNights.forEach(r => {
+          r.classList.add('row-error');
+          r.querySelector('.leg-nights-input').classList.add('input-error');
+        });
+        errorEl.textContent = missingNights.length === 1
+          ? 'Please enter the number of nights for the highlighted destination.'
+          : `Please enter the number of nights for all ${missingNights.length} highlighted destinations.`;
+        errorEl.classList.add('visible');
+        return;
+      }
       const legs = legRows.map(row => ({
         destination: row.querySelector('.leg-dest').value.trim(),
         tripType: row.querySelector('.leg-triptype-group .toggle-btn.active')?.dataset.val || 'beach',
@@ -912,7 +955,7 @@
         <div class="toggle-group leg-accom-group">${acBtns}</div>
         <div class="leg-nights-row">
           <label>Nights</label>
-          <input type="number" class="leg-nights-input" placeholder="e.g. 5" min="1" value="${nightsVal}">
+          <input type="number" class="leg-nights-input" placeholder="e.g. 5" min="1" value="${nightsVal}" oninput="clearLegError(this)">
         </div>
       `;
       list.appendChild(div);
