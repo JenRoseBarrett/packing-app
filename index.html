@@ -566,18 +566,24 @@
         errorEl.classList.add('visible');
         return;
       }
+      const missingDest = legRows.filter(r => !r.querySelector('.leg-dest').value.trim());
       const missingNights = legRows.filter(r => {
         const val = parseInt(r.querySelector('.leg-nights-input').value);
         return !val || val < 1;
       });
-      if (missingNights.length) {
-        missingNights.forEach(r => {
-          r.classList.add('row-error');
-          r.querySelector('.leg-nights-input').classList.add('input-error');
-        });
-        errorEl.textContent = missingNights.length === 1
-          ? 'Please enter the number of nights for the highlighted destination.'
-          : `Please enter the number of nights for all ${missingNights.length} highlighted destinations.`;
+      missingDest.forEach(r => {
+        r.classList.add('row-error');
+        r.querySelector('.leg-dest').classList.add('input-error');
+      });
+      missingNights.forEach(r => {
+        r.classList.add('row-error');
+        r.querySelector('.leg-nights-input').classList.add('input-error');
+      });
+      if (missingDest.length || missingNights.length) {
+        const msgs = [];
+        if (missingDest.length) msgs.push('destination');
+        if (missingNights.length) msgs.push('number of nights');
+        errorEl.textContent = `Please fill in the ${msgs.join(' and ')} for all highlighted trips.`;
         errorEl.classList.add('visible');
         return;
       }
@@ -984,6 +990,9 @@
     }
 
     function updateLegBadge(input) {
+      input.classList.remove('input-error');
+      input.closest('.leg-row').classList.remove('row-error');
+      document.getElementById('tripError').classList.remove('visible');
       const dest = input.value.trim();
       const wrap = input.nextElementSibling;
       const badge = wrap.querySelector('.leg-intl-badge');
